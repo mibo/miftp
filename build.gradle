@@ -2,6 +2,9 @@ buildscript {
 	ext {
 		kotlinVersion = '1.2.71'
 		springBootVersion = '2.1.1.RELEASE'
+        ftpServerVersion = '1.1.1'
+        ftpClientVersion = '3.6'
+        junitVersion = '4.12'
 	}
 	repositories {
 		mavenCentral()
@@ -20,7 +23,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 group = 'de.mirb.project'
-version = '0.0.1-SNAPSHOT'
+version = '0.1.0-SNAPSHOT'
 sourceCompatibility = 1.8
 compileKotlin {
 	kotlinOptions {
@@ -41,11 +44,13 @@ repositories {
 
 
 dependencies {
-    implementation('org.apache.ftpserver:ftpserver-core:1.1.1')
+    implementation("org.apache.ftpserver:ftpserver-core:${ftpServerVersion}")
 	implementation('org.springframework.boot:spring-boot-starter-webflux')
 	implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
 	testImplementation('io.projectreactor:reactor-test')
+    testImplementation("commons-net:commons-net:${ftpClientVersion}")
+    testImplementation("junit:junit:${junitVersion}")
 }
