@@ -4,13 +4,13 @@ import org.apache.ftpserver.ConnectionConfig;
 import org.apache.ftpserver.ConnectionConfigFactory;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
-import org.apache.ftpserver.ftplet.FtpException;
-import org.apache.ftpserver.ftplet.UserManager;
+import org.apache.ftpserver.ftplet.*;
 import org.apache.ftpserver.listener.Listener;
 import org.apache.ftpserver.listener.ListenerFactory;
 import org.apache.ftpserver.ssl.SslConfigurationFactory;
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
 import org.apache.ftpserver.usermanager.impl.BaseUser;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -22,6 +22,7 @@ public class MiFtpServer {
   private final int port;
   private final BaseUser user;
   private FtpServer server;
+  private FileSystemFactory fileSystemFactory;
 
   public MiFtpServer(int port) {
     this(port, null, null);
@@ -59,7 +60,7 @@ public class MiFtpServer {
     factory.addListener("default", createListener(false));
     factory.setUserManager(createUserManager());
     //
-    factory.setFileSystem(new InMemoryFileSystem());
+    factory.setFileSystem(grantFileSystem());
 
     server = factory.createServer();
     server.start();
@@ -71,11 +72,32 @@ public class MiFtpServer {
     serverFactory.setConnectionConfig(createConnectionConfig());
     serverFactory.addListener("default", createListener(true));
     serverFactory.setUserManager(createUserManager());
-    serverFactory.setFileSystem(new InMemoryFileSystem());
+    serverFactory.setFileSystem(grantFileSystem());
 
     // start the server
     server = serverFactory.createServer();
     server.start();
+  }
+
+  public FileSystemView getFileSystemView(String username) {
+    try {
+      BaseUser user = new BaseUser();
+      user.setName(username);
+      return fileSystemFactory.createFileSystemView(user);
+    } catch (FtpException e) {
+      System.out.println("Ex: " + e.getMessage());
+      // FIXME: re think exception
+      throw new IllegalArgumentException("Problem with user: " + username);
+    }
+
+  }
+
+  @NotNull
+  private synchronized FileSystemFactory grantFileSystem() {
+    if(fileSystemFactory == null) {
+      fileSystemFactory = new InMemoryFileSystem();
+    }
+    return fileSystemFactory;
   }
 
 
