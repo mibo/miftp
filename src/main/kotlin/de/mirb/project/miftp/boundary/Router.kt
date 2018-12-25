@@ -17,6 +17,16 @@ class Router {
   @Bean
   fun route() = router {
 
-    GET("/files") { ServerResponse.ok().body(fromObject(handler.listFiles("username"))) }
+    val user = "username"
+    GET("/files") { ServerResponse.ok().body(fromObject(handler.listFiles(user))) }
+    GET("/files/{id}") {
+      val id = it.pathVariable("id")
+      val fileContentById = handler.getFileContentById(user, id)
+      if(fileContentById == null) {
+        notFound().build()
+      } else {
+        ServerResponse.ok().body(fromObject(fileContentById))
+      }
+    }
   }
 }
