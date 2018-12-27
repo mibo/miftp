@@ -5,6 +5,7 @@ import de.mirb.project.miftp.boundary.FileView
 import org.apache.ftpserver.ftplet.FtpFile
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.nio.ByteBuffer
 
 @Component
 class FtpHandler @Autowired constructor(private val server: MiFtpServer) {
@@ -16,7 +17,7 @@ class FtpHandler @Autowired constructor(private val server: MiFtpServer) {
     return view.homeDirectory.listFiles().map { FileView.create(it) }
   }
 
-  fun getFileContentById(user: String, id: String): FileView? {
+  fun getFileById(user: String, id: String): FileView? {
     val view = server.getFileSystemView(user)
     println("Fs view: $view")
 //    return view.homeDirectory.listFiles()
@@ -29,9 +30,16 @@ class FtpHandler @Autowired constructor(private val server: MiFtpServer) {
 //      return null
 //    }
 //    return FileView(found!!)
+    // FIXME: check if/how inefficient this is
     return view.homeDirectory.listFiles()
             .map { FileView.create(it) }
             .firstOrNull { it.name == id } ?: return null
+  }
+
+  fun getFileContentById(user: String, id: String): ByteBuffer? {
+    val view = getFileById(user, id) ?: return null
+    // FIXME: check if/how inefficient this is
+    return view.content()
   }
 //  fun list
 }
