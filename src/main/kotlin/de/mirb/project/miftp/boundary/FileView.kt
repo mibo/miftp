@@ -1,6 +1,7 @@
 package de.mirb.project.miftp.boundary
 
 import org.apache.ftpserver.ftplet.FtpFile
+import org.springframework.http.MediaType
 import java.lang.IllegalArgumentException
 import java.nio.ByteBuffer
 
@@ -25,5 +26,15 @@ data class FileView(val name: String, val lastModified: Long, val size: Long, pr
     }
     // TODO: check if return empty content is better
     throw IllegalArgumentException("Unable to get content from directory")
+  }
+
+  fun contentType(): MediaType {
+    if(name.toLowerCase().endsWith("jpg") || name.toLowerCase().endsWith("jpeg")) {
+      return MediaType.IMAGE_JPEG
+    }
+    if(name.toLowerCase().endsWith("png")) {
+      return MediaType.IMAGE_PNG
+    }
+    return MediaType.APPLICATION_OCTET_STREAM
   }
 }
