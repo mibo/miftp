@@ -2,7 +2,6 @@ package de.mirb.project.miftp.boundary
 
 import org.apache.ftpserver.ftplet.FtpFile
 import org.springframework.http.MediaType
-import java.lang.IllegalArgumentException
 import java.nio.ByteBuffer
 
 data class FileView(val name: String, val lastModified: Long, val size: Long, private val ftpFile: FtpFile) {

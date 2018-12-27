@@ -35,7 +35,6 @@ class Router {
   }
 
   private fun fileView(user: String, id: String): Optional<FileView> {
-    val fileById = handler.getFileById(user, id)
-    return Optional.ofNullable(fileById)
+    return handler.getFileById(user, id)
   }
 }

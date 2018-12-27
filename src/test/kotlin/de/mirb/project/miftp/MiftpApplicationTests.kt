@@ -12,6 +12,5 @@ class MiftpApplicationTests {
 	@Test
 	fun contextLoads() {
 	}
-
 }
 
