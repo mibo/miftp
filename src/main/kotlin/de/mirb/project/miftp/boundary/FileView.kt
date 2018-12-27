@@ -29,10 +29,11 @@ data class FileView(val name: String, val lastModified: Long, val size: Long, pr
   }
 
   fun contentType(): MediaType {
-    if(name.toLowerCase().endsWith("jpg") || name.toLowerCase().endsWith("jpeg")) {
+    val lcName = name.toLowerCase()
+    if(lcName.endsWith("jpg") || lcName.endsWith("jpeg")) {
       return MediaType.IMAGE_JPEG
     }
-    if(name.toLowerCase().endsWith("png")) {
+    if(lcName.endsWith("png")) {
       return MediaType.IMAGE_PNG
     }
     return MediaType.APPLICATION_OCTET_STREAM
