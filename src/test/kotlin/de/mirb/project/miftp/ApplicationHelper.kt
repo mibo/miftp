@@ -9,6 +9,6 @@ class ApplicationHelper {
   @Ignore("just for manual password encoding")
   fun encodedPasswords() {
     val encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder()
-    println(encoder.encode("user"))
+    println(encoder.encode("miftp"))
   }
 }

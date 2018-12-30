@@ -1,0 +1,90 @@
+= Simple FTP Server
+
+Build a embedded in-memory FTP server with REST endpoint.
+
+[ TOC ]
+
+== Disclaimer
+Current source code and version is published without license. +
+If you (somebody) want to use this in his project please contact me.
+Afterwards I will grant the use of this code without warranty.
+When I find some time to inform myself about the different possible licenses at link:http://choosealicense.com[choosealicense.com]
+I will probably change to a suitable license.
+
+== General information
+Build a embedded in-memory FTP server with REST endpoint.
+
+== Run
+
+  . With SSL (_default_)
+  .. Start via Gradle `gradle bootrun`
+  .. Execute `curl -k ftps://username:password@localhost:50021` to see content of the `/tmp` folder
+  *** To add own credentials use `gradle bootrun --args='--miftp.user=miftp --miftp.password={bcrypt}$2a$10$5SyjnpMano4Z3LGbWQC9W.ySSsheBZI.7uufzpJ4uKokBGfd.uHau'`
+
+== Related projects
+
+  * link:https://mina.apache.org/ftpserver-project/index.html[Apache MINA]
+    ** link:https://mina.apache.org/ftpserver-project/embedding_ftpserver.html[Embedding FTP Server]
+
+
+== Technical information
+  * The release versions are based on link:http://semver.org[Semantic Versioning 2.0.0].
+  * Project is (currently) a mixture of Java and Kotlin
+  * The latest release require `Java 8` (or newer) and is build with link:https://gradle.org/[Gradle].
+
+
+== Current Features _(for this branch)_
+
+  * NONE
+
+== New and Noteworthy
+
+  * *nothing*
+
+== Roadmap
+
+  * *none*
+
+
+== Helpful...
+
+=== Technical details
+
+.Generate a Self Signed Certificate using Java Keytool
+link:https://www.sslshopper.com/article-how-to-create-a-self-signed-certificate-using-java-keytool.html[Create keystore]
+`keytool -genkey -keyalg RSA -alias selfsigned -keystore keystore.jks -storepass password -validity 360 -keysize 2048`
+
+=== Links
+
+  * Nothing yet
+
+=== Presentation
+
+  * Nothing yet
+
+
+=== Side notes
+
+==== Project parts are copied from (my) `mi-ftp-server` project...
+.Command
+`mvn archetype:generate -DarchetypeGroupId=pl.org.miki -DarchetypeArtifactId=java8-quickstart-archetype -DarchetypeVersion=RELEASE`
+
+.Output:
+```
+[INFO] ----------------------------------------------------------------------------
+[INFO] Using following parameters for creating project from Archetype: java8-quickstart-archetype:1.0.0
+[INFO] ----------------------------------------------------------------------------
+[INFO] Parameter: groupId, Value: de.mirb.project
+[INFO] Parameter: artifactId, Value: mi-ftp-server
+[INFO] Parameter: version, Value: 1.0-SNAPSHOT
+[INFO] Parameter: package, Value: de.mirb.project
+[INFO] Parameter: packageInPathFormat, Value: de/mirb/project
+[INFO] Parameter: package, Value: de.mirb.project
+[INFO] Parameter: version, Value: 1.0-SNAPSHOT
+[INFO] Parameter: testLibrary, Value: junit
+[INFO] Parameter: groupId, Value: de.mirb.project
+[INFO] Parameter: compilerMode, Value: simple
+[INFO] Parameter: artifactId, Value: mi-ftp-server
+[INFO] project created from Archetype in dir: /Users/michael/Development/Projects/MiProjects/MiFtp/mi-ftp-server
+
+```
