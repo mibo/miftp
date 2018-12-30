@@ -19,7 +19,7 @@ Build a embedded in-memory FTP server with REST endpoint.
   . With SSL (_default_)
   .. Start via Gradle `gradle bootrun`
   .. Execute `curl -k ftps://username:password@localhost:50021` to see content of the `/tmp` folder
-  *** To add own credentials use `gradle bootrun --args='--miftp.user=miftp --miftp.password={bcrypt}$2a$10$5SyjnpMano4Z3LGbWQC9W.ySSsheBZI.7uufzpJ4uKokBGfd.uHau'`
+  *** To add own credentials use `gradle bootrun --args='--miftp.ftp.user=ftp --miftp.ftp.user=ftp --miftp.user=miftp --miftp.password={bcrypt}$2a$10$5SyjnpMano4Z3LGbWQC9W.ySSsheBZI.7uufzpJ4uKokBGfd.uHau'`
 
 == Related projects
 

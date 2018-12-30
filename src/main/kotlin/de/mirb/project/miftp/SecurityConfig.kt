@@ -15,9 +15,12 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 class SecurityConfig {
 
   @Value("\${miftp.user}")
-  var username: String? = null
+  private var username: String? = null
   @Value("\${miftp.password}")
-  var password: String? = null
+  private var password: String? = null
+
+  fun getUsername():String = username!!
+
   /**
    * See for password encoding the ApplicationHelper in the tests
    */

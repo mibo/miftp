@@ -1,6 +1,7 @@
 package de.mirb.project.miftp.boundary
 
 import de.mirb.project.miftp.control.FtpHandler
+import de.mirb.project.miftp.control.FtpProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -14,11 +15,13 @@ class Router {
 
   @Autowired
   lateinit var handler: FtpHandler
+  @Autowired
+  lateinit var ftpProvider: FtpProvider
 
   @Bean
   fun route() = router {
 
-    val user = "username"
+    val user = ftpProvider.getUsername()
     GET("/files") { ServerResponse.ok().body(fromObject(handler.listFiles(user))) }
     GET("/files/{id}") {
       val id = it.pathVariable("id")
