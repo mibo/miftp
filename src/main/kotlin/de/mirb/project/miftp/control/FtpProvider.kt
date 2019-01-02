@@ -25,6 +25,7 @@ class FtpProvider {
 
     val server = MiFtpServer(port!!, username, password)
     server.startWithSsl()
+    println("Started FTP server on port $port (with ssl enabled)")
     return server
   }
 
