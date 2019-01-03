@@ -4,6 +4,7 @@ import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.ftpserver.ftplet.User;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by mibo on 21.04.17.
@@ -11,13 +12,15 @@ import java.util.*;
 public class InMemoryFtpDir extends InMemoryFtpPath {
 
   private final Map<String, InMemoryFtpFile> name2File = new HashMap<>();
+  private final InMemoryFileSystemConfig config;
 
-  public InMemoryFtpDir(String name, User user) {
-    super(null, name, user);
+  public InMemoryFtpDir(String name, User user, InMemoryFileSystemConfig config) {
+    this(null, name, user, config);
   }
 
-  public InMemoryFtpDir(InMemoryFtpDir parentDir, String name, User user) {
+  public InMemoryFtpDir(InMemoryFtpDir parentDir, String name, User user, InMemoryFileSystemConfig config) {
     super(parentDir, name, user);
+    this.config = config;
   }
 
   @Override
@@ -35,7 +38,75 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
   }
 
   public InMemoryFtpFile grantFile(String name) {
+    validate();
     return name2File.computeIfAbsent(name, this::createFile);
+  }
+
+  private void validate() {
+    if(config.getMaxFiles() > 0 && name2File.size() == config.getMaxFiles()) {
+      // remove oldest
+      name2File.remove(getOldestFilesName());
+    }
+    // check max memory size
+    long maxMemoryInKilobytes = config.getMaxMemoryInKilobytes();
+    if(maxMemoryInKilobytes > 0 && maxMemoryInKilobytes > currentMemoryConsumption()) {
+//      while(maxMemoryInKilobytes > currentMemoryConsumption()) {
+//        name2File.remove(getOldestFilesName());
+//      }
+      do {
+        name2File.remove(getOldestFilesName());
+      } while (maxMemoryInKilobytes > currentMemoryConsumption());
+    }
+    // check for old files
+    long ttlInMilliseconds = config.getTtlInMilliseconds();
+    if(ttlInMilliseconds > 0) {
+      removeFilesOlderThen(ttlInMilliseconds);
+    }
+  }
+
+  private void removeFilesOlderThen(long ttlInMilliseconds) {
+    name2File.values().stream()
+        .filter(f -> (System.currentTimeMillis() - f.getLastModified()) > ttlInMilliseconds)
+        .map(InMemoryFtpPath::getName)
+        .forEach(name2File::remove);
+//        .forEach(f -> name2File.remove(f.getName()));
+
+//    List<InMemoryFtpFile> inMemoryFtpFileStream = name2File.values().stream()
+//        .filter(f -> (System.currentTimeMillis() - f.getLastModified()) > ttlInMilliseconds)
+//        .collect(Collectors.toList());
+//    inMemoryFtpFileStream.forEach(file -> name2File.remove(file.getName()));
+  }
+
+
+  //  private void removeFilesOlderThen(long ttlInMilliseconds) {
+//    boolean run = true;
+//    while(!name2File.isEmpty() && run) {
+//      InMemoryFtpFile oldestFile = name2File.get(getOldestFilesName());
+//      long age = System.currentTimeMillis() - oldestFile.getLastModified();
+//      if(age > ttlInMilliseconds) {
+//        name2File.remove(oldestFile.getName());
+//      } else {
+//        run = false;
+//      }
+//    }
+//  }
+
+  private long currentMemoryConsumption() {
+    if(name2File.isEmpty()) {
+      return 0;
+    }
+    return name2File.values().stream()
+        .collect(Collectors.summarizingLong(InMemoryFtpFile::getSize))
+        .getCount();
+  }
+
+  private String getOldestFilesName() {
+    if(name2File.isEmpty()) {
+      throw new IllegalStateException();
+    }
+    return name2File.values().stream()
+        .min((first, second) -> (int) ((int) first.getLastModified() - second.getLastModified()))
+        .map(InMemoryFtpPath::getName).get();
   }
 
   @Override

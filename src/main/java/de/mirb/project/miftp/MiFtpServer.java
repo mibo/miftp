@@ -1,10 +1,13 @@
 package de.mirb.project.miftp;
-import de.mirb.project.miftp.fs.InMemoryFileSystem;
+
 import org.apache.ftpserver.ConnectionConfig;
 import org.apache.ftpserver.ConnectionConfigFactory;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
-import org.apache.ftpserver.ftplet.*;
+import org.apache.ftpserver.ftplet.FileSystemFactory;
+import org.apache.ftpserver.ftplet.FileSystemView;
+import org.apache.ftpserver.ftplet.FtpException;
+import org.apache.ftpserver.ftplet.UserManager;
 import org.apache.ftpserver.listener.Listener;
 import org.apache.ftpserver.listener.ListenerFactory;
 import org.apache.ftpserver.ssl.SslConfigurationFactory;
@@ -19,7 +22,8 @@ import java.io.File;
  */
 public class MiFtpServer {
 
-  private final int port;
+//  private final int port;
+  private final FtpServerConfig config;
   private final BaseUser user;
   private FtpServer server;
   private FileSystemFactory fileSystemFactory;
@@ -29,12 +33,16 @@ public class MiFtpServer {
   }
 
   public MiFtpServer(int port, String username, String password) {
-    if(port <= 0 || port >= 65535) {
-      throw new IllegalArgumentException("Invalid port '" + port + "'");
-    }
-    this.port = port;
+    this(new FtpServerConfig(port, username, password));
+  }
 
-    if(username == null || password == null) {
+  public MiFtpServer(FtpServerConfig config) {
+    this.config = config;
+    if(config.getPort() <= 0 || config.getPort() >= 65535) {
+      throw new IllegalArgumentException("Invalid port '" + config.getPort() + "'");
+    }
+
+    if(config.getUsername() == null || config.getPassword() == null) {
       // create anonymous user
       user = new BaseUser();
       user.setName("anonymous");
@@ -42,8 +50,8 @@ public class MiFtpServer {
       user.setHomeDirectory("/");
     } else {
       user = new BaseUser();
-      user.setName(username);
-      user.setPassword(password);
+      user.setName(config.getUsername());
+      user.setPassword(config.getPassword());
       user.setHomeDirectory("/");
     }
   }
@@ -95,7 +103,7 @@ public class MiFtpServer {
   @NotNull
   private synchronized FileSystemFactory grantFileSystem() {
     if(fileSystemFactory == null) {
-      fileSystemFactory = new InMemoryFileSystem();
+      fileSystemFactory = config.getFileSystemConfig().createFileSystemFactory();
     }
     return fileSystemFactory;
   }
@@ -110,7 +118,7 @@ public class MiFtpServer {
 
   private Listener createListener(boolean enableSsl) {
     ListenerFactory listenerFactory = new ListenerFactory();
-    listenerFactory.setPort(port);
+    listenerFactory.setPort(config.getPort());
     if(enableSsl) {
       //    URL url = Thread.currentThread().getContextClassLoader().getResource("keystore.jks");
 //    System.out.println(url.getPath());

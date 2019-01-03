@@ -11,13 +11,15 @@ import org.apache.ftpserver.ftplet.User;
 public class InMemoryFsView implements FileSystemView {
 
   private final User user;
+  private final InMemoryFileSystemConfig config;
   private final InMemoryFtpDir homeDir;
   private InMemoryFtpDir workingDir;
 
-  public InMemoryFsView(User user) {
+  public InMemoryFsView(User user, InMemoryFileSystemConfig config) {
     this.user = user;
+    this.config = config;
 //    workingDir = new InMemoryFtpDir("/", user);
-    homeDir = new InMemoryFtpDir("/", user);
+    homeDir = new InMemoryFtpDir("/", user, config);
     workingDir = homeDir;
   }
 
@@ -36,7 +38,7 @@ public class InMemoryFsView implements FileSystemView {
     if("/".equals(path)) {
       workingDir = getHomeDirectory();
     } else {
-      workingDir = new InMemoryFtpDir(workingDir, path, user);
+      workingDir = new InMemoryFtpDir(workingDir, path, user, config);
     }
     return true;
   }
