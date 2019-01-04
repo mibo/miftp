@@ -38,24 +38,30 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
   }
 
   public InMemoryFtpFile grantFile(String name) {
-    validate();
     return name2File.computeIfAbsent(name, this::createFile);
   }
 
+  public void runValidation() {
+    validate();
+    // recurse
+    // TODO: only make sense if directories are supported (instead of `InMemoryFtpFile` then `InMemoryFtpPath`)
+    name2File.values().forEach(InMemoryFtpFile::runValidation);
+  }
+
   private void validate() {
-    if(config.getMaxFiles() > 0 && name2File.size() == config.getMaxFiles()) {
+    while(config.getMaxFiles() > 0 && name2File.size() > config.getMaxFiles()) {
       // remove oldest
       name2File.remove(getOldestFilesName());
     }
     // check max memory size
-    long maxMemoryInKilobytes = config.getMaxMemoryInKilobytes();
-    if(maxMemoryInKilobytes > 0 && maxMemoryInKilobytes > currentMemoryConsumption()) {
-//      while(maxMemoryInKilobytes > currentMemoryConsumption()) {
+    long maxMemoryInBytes = config.getmaxMemoryInBytes();
+    if(maxMemoryInBytes > 0 && maxMemoryInBytes > currentMemoryConsumption()) {
+//      while(maxMemoryInBytes > currentMemoryConsumption()) {
 //        name2File.remove(getOldestFilesName());
 //      }
       do {
         name2File.remove(getOldestFilesName());
-      } while (maxMemoryInKilobytes > currentMemoryConsumption());
+      } while (maxMemoryInBytes > currentMemoryConsumption());
     }
     // check for old files
     long ttlInMilliseconds = config.getTtlInMilliseconds();

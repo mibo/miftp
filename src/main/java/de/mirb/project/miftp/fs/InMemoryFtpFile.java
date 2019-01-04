@@ -12,6 +12,10 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
   }
 
   @Override
+  public void runValidation() {
+  }
+
+  @Override
   public boolean isDirectory() {
     return false;
   }

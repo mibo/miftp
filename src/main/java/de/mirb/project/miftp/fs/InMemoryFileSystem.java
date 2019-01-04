@@ -35,8 +35,8 @@ public class InMemoryFileSystem implements FileSystemFactory {
       config.ttlInMilliseconds(ttlInMilliseconds);
       return this;
     }
-    public Builder maxMemoryInKilobytes(long maxMemoryInKilobytes) {
-      config.maxMemoryInKilobytes(maxMemoryInKilobytes);
+    public Builder maxMemoryInBytes(long maxMemoryInBytes) {
+      config.maxMemoryInBytes(maxMemoryInBytes);
       return this;
     }
     public Builder maxFiles(long maxFiles) {

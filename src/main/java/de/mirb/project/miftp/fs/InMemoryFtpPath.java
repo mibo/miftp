@@ -40,6 +40,8 @@ public abstract class InMemoryFtpPath implements FtpFile {
     return parentDir.getAbsolutePath() + name;
   }
 
+  public abstract void runValidation();
+
   @Override
   public String getName() {
     return name;

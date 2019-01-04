@@ -5,6 +5,10 @@ import org.apache.ftpserver.ftplet.FtpException;
 import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.ftpserver.ftplet.User;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Created by mibo on 21.04.17.
  */
@@ -21,6 +25,9 @@ public class InMemoryFsView implements FileSystemView {
 //    workingDir = new InMemoryFtpDir("/", user);
     homeDir = new InMemoryFtpDir("/", user, config);
     workingDir = homeDir;
+
+    Executors.newSingleThreadScheduledExecutor()
+        .scheduleAtFixedRate(homeDir::runValidation, 0, 10, TimeUnit.SECONDS);
   }
 
   @Override

@@ -5,7 +5,7 @@ import org.apache.ftpserver.ftplet.FileSystemFactory;
 
 public class InMemoryFileSystemConfig implements FileSystemConfig {
   private long ttlInMilliseconds = 0;
-  private long maxMemoryInKilobytes = 0;
+  private long maxMemoryInBytes = 0;
   private long maxFiles = 0;
 
   public static class Builder {
@@ -15,8 +15,8 @@ public class InMemoryFileSystemConfig implements FileSystemConfig {
       config.ttlInMilliseconds = ttlInMilliseconds;
       return this;
     }
-    public Builder maxMemoryInKilobytes(long maxMemoryInKilobytes) {
-      config.maxMemoryInKilobytes = maxMemoryInKilobytes;
+    public Builder maxMemoryInBytes(long maxMemoryInBytes) {
+      config.maxMemoryInBytes = maxMemoryInBytes;
       return this;
     }
     public Builder maxFiles(long maxFiles) {
@@ -38,8 +38,8 @@ public class InMemoryFileSystemConfig implements FileSystemConfig {
   }
 
 
-  public long getMaxMemoryInKilobytes() {
-    return maxMemoryInKilobytes;
+  public long getmaxMemoryInBytes() {
+    return maxMemoryInBytes;
   }
 
   public long getMaxFiles() {

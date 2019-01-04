@@ -20,8 +20,8 @@ class FtpProvider {
   var maxFiles: Long = 0
   @Value("\${miftp.ftp.ttlInMilliseconds:0}")
   var ttlInMilliseconds: Long = 0
-  @Value("\${miftp.ftp.maxMemoryInKilobytes:0}")
-  var maxMemoryInKilobytes: Long = 0
+  @Value("\${miftp.ftp.maxMemoryInBytes:0}")
+  var maxMemoryInBytes: Long = 0
 
   @Bean
   fun server(): MiFtpServer {
@@ -33,7 +33,7 @@ class FtpProvider {
 
     val fsConfig = InMemoryFileSystemConfig.with()
             .maxFiles(maxFiles)
-            .maxMemoryInKilobytes(maxMemoryInKilobytes)
+            .maxMemoryInBytes(maxMemoryInBytes)
             .ttlInMilliseconds(ttlInMilliseconds)
             .create()
     val server = MiFtpServer(FtpServerConfig(port!!, username, password, fsConfig))
