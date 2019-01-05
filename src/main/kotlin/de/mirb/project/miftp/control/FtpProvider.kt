@@ -16,6 +16,8 @@ class FtpProvider {
   private var password: String? = null
   @Value("\${miftp.ftp.port:50021}")
   var port: Int? = null
+  @Value("\${miftp.ftp.pasvPorts:50100-50200}")
+  var pasvPorts: String? = null
   @Value("\${miftp.ftp.maxFiles:0}")
   var maxFiles: Long = 0
   @Value("\${miftp.ftp.ttlInMilliseconds:0}")
@@ -39,9 +41,15 @@ class FtpProvider {
             .ttlInMilliseconds(ttlInMilliseconds)
             .cleanUpInterval(cleanupInterval)
             .create()
-    val server = MiFtpServer(FtpServerConfig(port!!, username, password, fsConfig))
+    val serverConfig = FtpServerConfig.with(port!!)
+            .username(username)
+            .password(password)
+            .pasvPorts(pasvPorts)
+            .fileSystemConfig(fsConfig)
+            .build()
+    val server = MiFtpServer(serverConfig)
     server.startWithSsl()
-    println("Started FTP server on port $port (with ssl enabled) and config $fsConfig")
+    println("Started FTP server on port $port (with ssl enabled) and config $serverConfig")
     return server
   }
 

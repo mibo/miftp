@@ -6,17 +6,27 @@ public class FtpServerConfig {
   private int port;
   private String username;
   private String password;
+  private String pasvPorts;
   private FileSystemConfig fsConfig;
 
-  public FtpServerConfig(int port, String username, String password) {
-    this(port, username, password, new InMemoryFileSystemConfig());
+  private FtpServerConfig() {
   }
 
-  public FtpServerConfig(int port, String username, String password, FileSystemConfig fileSystemConfig) {
-    this.port = port;
-    this.username = username;
-    this.password = password;
-    this.fsConfig = fileSystemConfig;
+//  public FtpServerConfig(int port, String username, String password) {
+//    this(port, username, password, new InMemoryFileSystemConfig());
+//  }
+//
+//  public FtpServerConfig(int port, String username, String password, FileSystemConfig fileSystemConfig) {
+//    this.port = port;
+//    this.username = username;
+//    this.password = password;
+//    this.fsConfig = fileSystemConfig;
+//  }
+
+  public static Builder with(int port) {
+    return new Builder()
+        .fileSystemConfig(new InMemoryFileSystemConfig())
+        .port(port);
   }
 
   public FileSystemConfig getFileSystemConfig() {
@@ -27,23 +37,64 @@ public class FtpServerConfig {
     return port;
   }
 
-  public void setPort(int port) {
-    this.port = port;
+  public String getPasvPorts() {
+    return pasvPorts;
   }
 
   public String getUsername() {
     return username;
   }
 
-  public void setUsername(String username) {
-    this.username = username;
-  }
-
   public String getPassword() {
     return password;
   }
 
-  public void setPassword(String password) {
-    this.password = password;
+  @Override
+  public String toString() {
+    return "FtpServerConfig{" +
+        "port=" + port +
+        ", username='" + username + '\'' +
+        ", password='" + ((password == null)? "<unset>": "<***>") + '\'' +
+        ", pasvPorts='" + pasvPorts + '\'' +
+        ", fsConfig=" + fsConfig +
+        '}';
+  }
+
+
+  public static final class Builder {
+    private FtpServerConfig ftpServerConfig;
+
+    private Builder() {
+      ftpServerConfig = new FtpServerConfig();
+    }
+
+    public Builder port(int port) {
+      ftpServerConfig.port = port;
+      return this;
+    }
+
+    public Builder pasvPorts(String ports) {
+      ftpServerConfig.pasvPorts = ports;
+      return this;
+    }
+
+    public Builder fileSystemConfig(FileSystemConfig config) {
+      ftpServerConfig.fsConfig = config;
+      return this;
+    }
+
+    public Builder username(String username) {
+      ftpServerConfig.username = username;
+      return this;
+    }
+
+    public Builder password(String password) {
+      ftpServerConfig.password = password;
+      return this;
+    }
+
+    public FtpServerConfig build() {
+      return ftpServerConfig;
+    }
   }
 }

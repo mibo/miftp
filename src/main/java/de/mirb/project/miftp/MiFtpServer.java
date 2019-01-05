@@ -1,9 +1,6 @@
 package de.mirb.project.miftp;
 
-import org.apache.ftpserver.ConnectionConfig;
-import org.apache.ftpserver.ConnectionConfigFactory;
-import org.apache.ftpserver.FtpServer;
-import org.apache.ftpserver.FtpServerFactory;
+import org.apache.ftpserver.*;
 import org.apache.ftpserver.ftplet.FileSystemFactory;
 import org.apache.ftpserver.ftplet.FileSystemView;
 import org.apache.ftpserver.ftplet.FtpException;
@@ -22,7 +19,6 @@ import java.io.File;
  */
 public class MiFtpServer {
 
-//  private final int port;
   private final FtpServerConfig config;
   private final BaseUser user;
   private FtpServer server;
@@ -33,7 +29,7 @@ public class MiFtpServer {
   }
 
   public MiFtpServer(int port, String username, String password) {
-    this(new FtpServerConfig(port, username, password));
+    this(FtpServerConfig.with(port).username(username).password(password).build());
   }
 
   public MiFtpServer(FtpServerConfig config) {
@@ -119,6 +115,13 @@ public class MiFtpServer {
   private Listener createListener(boolean enableSsl) {
     ListenerFactory listenerFactory = new ListenerFactory();
     listenerFactory.setPort(config.getPort());
+    if(config.getPasvPorts() != null) {
+      DataConnectionConfigurationFactory dccFactory = new DataConnectionConfigurationFactory();
+  //    dccFactory.setActiveEnabled(true);
+      dccFactory.setPassivePorts(config.getPasvPorts());
+      listenerFactory.setDataConnectionConfiguration(dccFactory.createDataConnectionConfiguration());
+    }
+
     if(enableSsl) {
       //    URL url = Thread.currentThread().getContextClassLoader().getResource("keystore.jks");
 //    System.out.println(url.getPath());
