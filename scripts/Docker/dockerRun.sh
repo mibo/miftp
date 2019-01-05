@@ -7,4 +7,5 @@ docker run --rm \
   -e MIFTP_FTP_PORT=50021 \
   -e MIFTP_FTP_USER=ftp  \
   -e MIFTP_FTP_PASSWORD=ftp \
+  -e MIFTP_FTP_MAXFILES=30 \
   mibo/miftp
