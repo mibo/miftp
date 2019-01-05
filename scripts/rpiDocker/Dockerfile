@@ -1,0 +1,19 @@
+FROM arm32v7/openjdk:11-jdk
+MAINTAINER mibo@apache.org
+
+VOLUME /tmp
+ARG FTP_PORT=50021
+ARG HTTP_PORT=8080
+ARG FTP_PASV_PORTS=50100-50200
+ARG JAR_FILE=build/libs/miftp-latest.jar
+COPY ${JAR_FILE} app.jar
+EXPOSE ${HTTP_PORT}
+EXPOSE ${FTP_PORT}
+EXPOSE ${FTP_PASV_PORTS}
+
+ENV SERVER_PORT=${HTTP_PORT}
+ENV MIFTP_FTP_PORT=${FTP_PORT}
+ENV MIFTP_FTP_PASV_PORTS=${PASV_PORTS}
+
+
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
