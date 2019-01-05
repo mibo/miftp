@@ -22,6 +22,8 @@ class FtpProvider {
   var ttlInMilliseconds: Long = 0
   @Value("\${miftp.ftp.maxMemoryInBytes:0}")
   var maxMemoryInBytes: Long = 0
+  @Value("\${miftp.ftp.cleanupInterval}")
+  var cleanupInterval: Int = 10
 
   @Bean
   fun server(): MiFtpServer {
@@ -35,10 +37,11 @@ class FtpProvider {
             .maxFiles(maxFiles)
             .maxMemoryInBytes(maxMemoryInBytes)
             .ttlInMilliseconds(ttlInMilliseconds)
+            .cleanUpInterval(cleanupInterval)
             .create()
     val server = MiFtpServer(FtpServerConfig(port!!, username, password, fsConfig))
     server.startWithSsl()
-    println("Started FTP server on port $port (with ssl enabled)")
+    println("Started FTP server on port $port (with ssl enabled) and config $fsConfig")
     return server
   }
 

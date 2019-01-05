@@ -6,6 +6,7 @@ import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.ftpserver.ftplet.User;
 
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -17,6 +18,7 @@ public class InMemoryFsView implements FileSystemView {
   private final InMemoryFileSystemConfig config;
   private final InMemoryFtpDir homeDir;
   private InMemoryFtpDir workingDir;
+  private ScheduledFuture<?> cleanupScheduler;
 
   public InMemoryFsView(User user, InMemoryFileSystemConfig config) {
     this.user = user;
@@ -25,8 +27,10 @@ public class InMemoryFsView implements FileSystemView {
     homeDir = new InMemoryFtpDir("/", user, config);
     workingDir = homeDir;
 
-    Executors.newSingleThreadScheduledExecutor()
-        .scheduleAtFixedRate(homeDir::cleanUpPath, 0, 10, TimeUnit.SECONDS);
+    if(config.getCleanupInterval() > 0) {
+      cleanupScheduler = Executors.newSingleThreadScheduledExecutor()
+          .scheduleAtFixedRate(homeDir::cleanUpPath, 0, config.getCleanupInterval(), TimeUnit.SECONDS);
+    }
   }
 
   @Override
