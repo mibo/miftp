@@ -132,6 +132,7 @@ public abstract class InMemoryFtpPath implements FtpFile {
   @Override
   public OutputStream createOutputStream(long l) {
     bout = new InMemoryByteArrayOutputStream();
+    content = null;
     lastModified = System.currentTimeMillis();
     return bout;
   }
@@ -143,7 +144,7 @@ public abstract class InMemoryFtpPath implements FtpFile {
 
   private byte[] getContent() {
     synchronized (name) {
-      if(bout != null) {
+      if(isFlushed()) {
         if(content == null) {
           content = bout.toByteArray();
         }

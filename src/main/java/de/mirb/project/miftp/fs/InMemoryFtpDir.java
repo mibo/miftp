@@ -66,15 +66,16 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
     }
     // check max memory size
     long maxMemoryInBytes = config.getMaxMemoryInBytes();
-    if(maxMemoryInBytes > 0 && maxMemoryInBytes > currentMemoryConsumption()) {
-      LOG.debug("Run cleanup path for maxMemoryInBytes '{}'.", maxMemoryInBytes);
-//      while(maxMemoryInBytes > currentMemoryConsumption()) {
-//        name2File.remove(getOldestFilesName());
-//      }
-      do {
+    if(maxMemoryInBytes > 0) {
+      long currentMemoryConsumption = currentMemoryConsumption();
+      LOG.debug("Run cleanup path for maxMemoryInBytes '{}' with current consumption '{}'.",
+          maxMemoryInBytes, currentMemoryConsumption);
+
+      while (currentMemoryConsumption > maxMemoryInBytes) {
         InMemoryFtpFile removed = name2File.remove(getOldestFilesName());
-        LOG.debug("Removed '{}' for bytes '{}'.", removed.getName(), removed.getSize());
-      } while (maxMemoryInBytes > currentMemoryConsumption());
+        LOG.debug("Removed '{}' for '{}' bytes.", removed.getName(), removed.getSize());
+        currentMemoryConsumption -= removed.getSize();
+      }
     }
     // check for old files
     long ttlInMilliseconds = config.getTtlInMilliseconds();
@@ -85,34 +86,15 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
   }
 
   private void removeFilesOlderThen(long ttlInMilliseconds) {
-    name2File.values().stream()
+    List<InMemoryFtpFile> toRemove = name2File.values().stream()
         .filter(f -> (System.currentTimeMillis() - f.getLastModified()) > ttlInMilliseconds)
         .filter(InMemoryFtpPath::isRemovable)
         .peek((name) -> LOG.debug("Remove '{}' with timestamp '{}'", name.getName(), name.getLastModified()))
-        .map(InMemoryFtpPath::getName)
 //        .peek((name) -> LOG.debug("Remove {}", name))
-        .forEach(name2File::remove);
-//        .forEach(f -> name2File.remove(f.getName()));
+        .collect(Collectors.toList());
 
-//    List<InMemoryFtpFile> inMemoryFtpFileStream = name2File.values().stream()
-//        .filter(f -> (System.currentTimeMillis() - f.getLastModified()) > ttlInMilliseconds)
-//        .collect(Collectors.toList());
-//    inMemoryFtpFileStream.forEach(file -> name2File.remove(file.getName()));
+    toRemove.forEach(f -> name2File.remove(f.getName()));
   }
-
-
-  //  private void removeFilesOlderThen(long ttlInMilliseconds) {
-//    boolean run = true;
-//    while(!name2File.isEmpty() && run) {
-//      InMemoryFtpFile oldestFile = name2File.get(getOldestFilesName());
-//      long age = System.currentTimeMillis() - oldestFile.getLastModified();
-//      if(age > ttlInMilliseconds) {
-//        name2File.remove(oldestFile.getName());
-//      } else {
-//        run = false;
-//      }
-//    }
-//  }
 
   private long currentMemoryConsumption() {
     if(name2File.isEmpty()) {
