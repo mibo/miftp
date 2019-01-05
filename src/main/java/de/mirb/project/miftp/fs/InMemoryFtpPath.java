@@ -17,7 +17,7 @@ public abstract class InMemoryFtpPath implements FtpFile {
   protected final User user;
 
   private long lastModified;
-  private ByteArrayOutputStream bout;
+  private InMemoryByteArrayOutputStream bout;
   private byte[] content;
 
 
@@ -40,7 +40,7 @@ public abstract class InMemoryFtpPath implements FtpFile {
     return parentDir.getAbsolutePath() + name;
   }
 
-  public abstract void runValidation();
+  public abstract void cleanUpPath();
 
   @Override
   public String getName() {
@@ -70,7 +70,7 @@ public abstract class InMemoryFtpPath implements FtpFile {
 
   @Override
   public boolean isRemovable() {
-    return false;
+    return isFlushed();
   }
 
   @Override
@@ -130,14 +130,14 @@ public abstract class InMemoryFtpPath implements FtpFile {
   }
 
   @Override
-  public OutputStream createOutputStream(long l) throws IOException {
-    bout = new ByteArrayOutputStream();
+  public OutputStream createOutputStream(long l) {
+    bout = new InMemoryByteArrayOutputStream();
     lastModified = System.currentTimeMillis();
     return bout;
   }
 
   @Override
-  public InputStream createInputStream(long l) throws IOException {
+  public InputStream createInputStream(long l) {
     return new ByteArrayInputStream(getContent());
   }
 
@@ -152,6 +152,13 @@ public abstract class InMemoryFtpPath implements FtpFile {
       }
     }
     return content;
+  }
+
+  public boolean isFlushed() {
+    if(bout == null || bout.isClosed()) {
+      return true;
+    }
+    return false;
   }
 
   @Override

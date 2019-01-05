@@ -5,7 +5,6 @@ import org.apache.ftpserver.ftplet.FtpException;
 import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.ftpserver.ftplet.User;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -27,7 +26,7 @@ public class InMemoryFsView implements FileSystemView {
     workingDir = homeDir;
 
     Executors.newSingleThreadScheduledExecutor()
-        .scheduleAtFixedRate(homeDir::runValidation, 0, 10, TimeUnit.SECONDS);
+        .scheduleAtFixedRate(homeDir::cleanUpPath, 0, 10, TimeUnit.SECONDS);
   }
 
   @Override

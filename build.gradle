@@ -5,6 +5,8 @@ buildscript {
         ftpServerVersion = '1.1.1'
         ftpClientVersion = '3.6'
         junitVersion = '4.12'
+        slf4jVersion = '1.7.25'
+        logbackVersion = '1.2.3'
 	}
 	repositories {
 		mavenCentral()
@@ -50,6 +52,8 @@ dependencies {
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.slf4j:slf4j-api:${slf4jVersion}")
+    implementation("ch.qos.logback:logback-classic:${logbackVersion}")
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
 	testImplementation('io.projectreactor:reactor-test')
     testImplementation("commons-net:commons-net:${ftpClientVersion}")

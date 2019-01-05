@@ -1,7 +1,6 @@
 package de.mirb.project.miftp.fs;
 
 import de.mirb.project.miftp.FileSystemConfig;
-import org.apache.ftpserver.ftplet.FileSystemFactory;
 
 public class InMemoryFileSystemConfig implements FileSystemConfig {
   private long ttlInMilliseconds = 0;
@@ -38,7 +37,7 @@ public class InMemoryFileSystemConfig implements FileSystemConfig {
   }
 
 
-  public long getmaxMemoryInBytes() {
+  public long getMaxMemoryInBytes() {
     return maxMemoryInBytes;
   }
 

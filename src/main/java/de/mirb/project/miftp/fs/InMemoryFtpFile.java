@@ -12,7 +12,7 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
   }
 
   @Override
-  public void runValidation() {
+  public void cleanUpPath() {
   }
 
   @Override
