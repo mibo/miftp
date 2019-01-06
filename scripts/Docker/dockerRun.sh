@@ -15,4 +15,5 @@ docker run --rm \
   -e MIFTP_FTP_USER=ftp  \
   -e MIFTP_FTP_PASSWORD=ftp \
   -e MIFTP_FTP_MAXFILES=30 \
+  #-e MIFTP_FTP_PASVPORTS=50100-50200 \
   $IMAGE
