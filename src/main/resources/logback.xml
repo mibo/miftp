@@ -13,5 +13,6 @@
   </root>
 
   <logger name="org.apache.ftpserver" level="WARN"/>
-  <logger name="de.mirb.project.miftp" level="DEBUG"/>
+  <logger name="de.mirb.project.miftp" level="INFO"/>
+  <logger name="org.springframework" level="INFO"/>
 </configuration>
