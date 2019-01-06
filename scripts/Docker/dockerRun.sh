@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+IMAGE=mibo/miftp
+if [[ -n $1 ]]; then
+  IMAGE=$1
+fi
+echo "Start with $IMAGE"
+
 docker run --rm \
   -p 8081:8080 -p 50021:50021 \
   -p 50100-50200:50100-50200 \
@@ -9,4 +15,4 @@ docker run --rm \
   -e MIFTP_FTP_USER=ftp  \
   -e MIFTP_FTP_PASSWORD=ftp \
   -e MIFTP_FTP_MAXFILES=30 \
-  mibo/miftp
+  $IMAGE
