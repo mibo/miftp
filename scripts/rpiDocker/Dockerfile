@@ -15,5 +15,4 @@ ENV SERVER_PORT=${HTTP_PORT}
 ENV MIFTP_FTP_PORT=${FTP_PORT}
 ENV MIFTP_FTP_PASVPORTS=${PASV_PORTS}
 
-
 ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]

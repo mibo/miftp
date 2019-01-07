@@ -112,6 +112,10 @@ public class MiFtpServer {
     return ccFac.createConnectionConfig();
   }
 
+  private boolean isSet(String value) {
+    return value != null && value.length() > 0;
+  }
+
   private Listener createListener(boolean enableSsl) {
     ListenerFactory listenerFactory = new ListenerFactory();
     listenerFactory.setPort(config.getPort());
@@ -119,6 +123,13 @@ public class MiFtpServer {
       DataConnectionConfigurationFactory dccFactory = new DataConnectionConfigurationFactory();
   //    dccFactory.setActiveEnabled(true);
       dccFactory.setPassivePorts(config.getPasvPorts());
+      dccFactory.setPassiveIpCheck(true);
+      if(isSet(config.getPasvAddress())) {
+        dccFactory.setPassiveAddress(config.getPasvAddress());
+      }
+      if(isSet(config.getPasvExtAddress())) {
+        dccFactory.setPassiveExternalAddress(config.getPasvExtAddress());
+      }
       listenerFactory.setDataConnectionConfiguration(dccFactory.createDataConnectionConfiguration());
     }
 

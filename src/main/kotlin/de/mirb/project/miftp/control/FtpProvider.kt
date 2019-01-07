@@ -18,6 +18,10 @@ class FtpProvider {
   var port: Int? = null
   @Value("\${miftp.ftp.pasvPorts:50100-50200}")
   var pasvPorts: String? = null
+  @Value("\${miftp.ftp.pasvAddress:}")
+  var pasvAddress: String? = ""
+  @Value("\${miftp.ftp.pasvExtAddress:}")
+  var pasvExtAddress: String? = ""
   @Value("\${miftp.ftp.maxFiles:0}")
   var maxFiles: Long = 0
   @Value("\${miftp.ftp.ttlInMilliseconds:0}")
@@ -45,6 +49,8 @@ class FtpProvider {
             .username(username)
             .password(password)
             .pasvPorts(pasvPorts)
+            .pasvAddress(pasvAddress)
+            .pasvExtAddress(pasvExtAddress)
             .fileSystemConfig(fsConfig)
             .build()
     val server = MiFtpServer(serverConfig)

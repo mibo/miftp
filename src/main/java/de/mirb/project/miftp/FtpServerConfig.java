@@ -7,6 +7,8 @@ public class FtpServerConfig {
   private String username;
   private String password;
   private String pasvPorts;
+  private String pasvAddress;
+  private String pasvExtAddress;
   private FileSystemConfig fsConfig;
 
   private FtpServerConfig() {
@@ -41,6 +43,10 @@ public class FtpServerConfig {
     return pasvPorts;
   }
 
+  public String getPasvAddress() {
+    return pasvAddress;
+  }
+
   public String getUsername() {
     return username;
   }
@@ -56,8 +62,14 @@ public class FtpServerConfig {
         ", username='" + username + '\'' +
         ", password='" + ((password == null)? "<unset>": "<***>") + '\'' +
         ", pasvPorts='" + pasvPorts + '\'' +
+        ", pasvAddress='" + pasvAddress + '\'' +
+        ", pasvExtAddress='" + pasvExtAddress + '\'' +
         ", fsConfig=" + fsConfig +
         '}';
+  }
+
+  public String getPasvExtAddress() {
+    return pasvExtAddress;
   }
 
 
@@ -75,6 +87,16 @@ public class FtpServerConfig {
 
     public Builder pasvPorts(String ports) {
       ftpServerConfig.pasvPorts = ports;
+      return this;
+    }
+
+    public Builder pasvAddress(String address) {
+      ftpServerConfig.pasvAddress = address;
+      return this;
+    }
+
+    public Builder pasvExtAddress(String address) {
+      ftpServerConfig.pasvExtAddress = address;
       return this;
     }
 
