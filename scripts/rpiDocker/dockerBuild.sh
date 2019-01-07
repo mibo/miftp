@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
-#docker build --build-arg JAR_FILE=build/libs/miftp-0.1.1.jar --build-arg HTTP_PORT=8081 -t mibo/rpiMiftp -t mibo/miftp:0.1.1 -f ./Dockerfile ../..
-#docker build --build-arg JAR_FILE=build/libs/miftp-0.1.1.jar --build-arg HTTP_PORT=8081 -t mibo/rpi-miftp -f ./Dockerfile ../..
-docker build --build-arg JAR_FILE=build/libs/miftp-0.2.0-SNAPSHOT.jar --build-arg HTTP_PORT=8081 -t mibo/rpi-miftp:sn -f ./Dockerfile ../..
+# Build command for Releases
+docker build --build-arg JAR_FILE=build/libs/miftp-0.2.0.jar --build-arg HTTP_PORT=8081 -t mibo/rpi-miftp -t mibo/rpi-miftp:0.2.0 -f ./Dockerfile ../..
+# Build command for SNAPSHOTs
+#docker build --build-arg JAR_FILE=build/libs/miftp-0.2.0-SNAPSHOT.jar --build-arg HTTP_PORT=8081 -t mibo/rpi-miftp:sn -f ./Dockerfile ../..
