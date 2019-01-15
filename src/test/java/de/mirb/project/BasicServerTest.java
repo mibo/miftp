@@ -1,5 +1,6 @@
 package de.mirb.project;
 
+import de.mirb.project.miftp.FtpServerConfig;
 import de.mirb.project.miftp.MiFtpServer;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -66,15 +67,28 @@ public class BasicServerTest {
       serverPort++;
     }
 
-    server = new MiFtpServer(serverPort, user, password);
+    server = createServer(useSsl, false);
+    server.start();
+  }
 
-    if(useSsl) {
-      serverUrl = "ftps://" + user + ":" + password + "@" + hostname + ":" + serverPort + "/";
-      server.startWithSsl();
-    } else {
-      serverUrl = "ftp://" + user + ":" + password + "@" + hostname + ":" + serverPort + "/";
-      server.startWithPlain();
+  private MiFtpServer createServer(boolean ssl, boolean anonymous) throws FtpException {
+    FtpServerConfig.Builder configBuilder = FtpServerConfig.with(serverPort);
+    if(!anonymous) {
+      configBuilder.username(user).password(password);
     }
+    if(ssl) {
+      serverUrl = "ftps://" + user + ":" + password + "@" + hostname + ":" + serverPort + "/";
+      FtpServerConfig config = configBuilder
+          .keystoreName("keystore.jks").keystorePassword("password")
+          .build();
+      server = new MiFtpServer(config);
+//      server.startWithSsl();
+    } else {
+      server = new MiFtpServer(configBuilder.build());
+      serverUrl = "ftp://" + user + ":" + password + "@" + hostname + ":" + serverPort + "/";
+//      server.startWithPlain();
+    }
+    return server;
   }
 
   @After
@@ -113,12 +127,8 @@ public class BasicServerTest {
   @Test
   public void anonymousLogin() throws Exception {
     server.stop();
-    server = new MiFtpServer(serverPort);
-    if(useSsl) {
-      server.startWithSsl();
-    } else {
-      server.startWithPlain();
-    }
+    server = createServer(useSsl, true);
+    server.start();
 
     FTPClient client = createFtpClient();
     client.connect("localhost", serverPort);

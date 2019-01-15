@@ -10,7 +10,6 @@ import org.apache.ftpserver.listener.ListenerFactory;
 import org.apache.ftpserver.ssl.SslConfigurationFactory;
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
 import org.apache.ftpserver.usermanager.impl.BaseUser;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -58,6 +57,20 @@ public class MiFtpServer {
     }
   }
 
+  /**
+   * Start server with SSL (ftps://) if configured (<code>keystoreName</code> is not <code>NULL</code>).
+   * Otherwise server is started without SSL (ftp://).
+   *
+   * @throws FtpException
+   */
+  public void start() throws FtpException {
+    if(config.getKeystoreName() == null) {
+      startWithPlain();
+    } else {
+      startWithSsl();
+    }
+  }
+
   public void startWithPlain() throws FtpException {
     FtpServerFactory factory = new FtpServerFactory();
     factory.setConnectionConfig(createConnectionConfig());
@@ -96,7 +109,6 @@ public class MiFtpServer {
 
   }
 
-  @NotNull
   private synchronized FileSystemFactory grantFileSystem() {
     if(fileSystemFactory == null) {
       fileSystemFactory = config.getFileSystemConfig().createFileSystemFactory();

@@ -60,7 +60,7 @@ class FtpProvider {
             .keystorePassword(keystorePassword)
             .build()
     val server = MiFtpServer(serverConfig)
-    server.startWithSsl()
+    server.start()
     println("Started FTP server on port $port (with ssl enabled) and config $serverConfig")
     return server
   }
