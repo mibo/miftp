@@ -2,6 +2,7 @@ FROM openjdk:11-jdk
 MAINTAINER mibo@apache.org
 
 VOLUME /tmp
+RUN mkdir /config
 ARG FTP_PORT=50021
 ARG HTTP_PORT=8080
 ARG FTP_PASV_PORTS=50100-50200
