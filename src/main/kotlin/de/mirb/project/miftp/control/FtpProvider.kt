@@ -30,6 +30,10 @@ class FtpProvider {
   var maxMemoryInBytes: Long = 0
   @Value("\${miftp.ftp.cleanupInterval}")
   var cleanupInterval: Int = 10
+  @Value("\${miftp.keystore.name:}")
+  var keystoreName: String? = ""
+  @Value("\${miftp.keystore.password:}")
+  var keystorePassword: String? = ""
 
   @Bean
   fun server(): MiFtpServer {
@@ -52,6 +56,8 @@ class FtpProvider {
             .pasvAddress(pasvAddress)
             .pasvExtAddress(pasvExtAddress)
             .fileSystemConfig(fsConfig)
+            .keystoreName(keystoreName)
+            .keystorePassword(keystorePassword)
             .build()
     val server = MiFtpServer(serverConfig)
     server.startWithSsl()

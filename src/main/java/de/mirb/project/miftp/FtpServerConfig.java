@@ -10,6 +10,8 @@ public class FtpServerConfig {
   private String pasvAddress;
   private String pasvExtAddress;
   private FileSystemConfig fsConfig;
+  private String keystoreName;
+  private String keystorePassword;
 
   private FtpServerConfig() {
   }
@@ -65,6 +67,8 @@ public class FtpServerConfig {
         ", pasvAddress='" + pasvAddress + '\'' +
         ", pasvExtAddress='" + pasvExtAddress + '\'' +
         ", fsConfig=" + fsConfig +
+        ", keystoreName=" + keystoreName +
+        ", keystorePassword='" + ((keystorePassword == null)? "<unset>": "<***>") + '\'' +
         '}';
   }
 
@@ -72,6 +76,13 @@ public class FtpServerConfig {
     return pasvExtAddress;
   }
 
+  public String getKeystoreName() {
+    return keystoreName;
+  }
+
+  public String getKeystorePassword() {
+    return keystorePassword;
+  }
 
   public static final class Builder {
     private FtpServerConfig ftpServerConfig;
@@ -112,6 +123,16 @@ public class FtpServerConfig {
 
     public Builder password(String password) {
       ftpServerConfig.password = password;
+      return this;
+    }
+
+    public Builder keystoreName(String keystoreName) {
+      ftpServerConfig.keystoreName = keystoreName;
+      return this;
+    }
+
+    public Builder keystorePassword(String keystorePassword) {
+      ftpServerConfig.keystorePassword = keystorePassword;
       return this;
     }
 

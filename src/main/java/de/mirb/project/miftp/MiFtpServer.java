@@ -138,8 +138,8 @@ public class MiFtpServer {
 //    System.out.println(url.getPath());
       // define SSL configuration
       SslConfigurationFactory ssl = new SslConfigurationFactory();
-      ssl.setKeystoreFile(new File("keystore.jks"));
-      ssl.setKeystorePassword("password");
+      ssl.setKeystoreFile(new File(config.getKeystoreName()));
+      ssl.setKeystorePassword(config.getKeystorePassword());
       // set the SSL configuration for the listener
       listenerFactory.setSslConfiguration(ssl.createSslConfiguration());
       // XXX: After setting to false the SSL test works!? TODO: recheck
