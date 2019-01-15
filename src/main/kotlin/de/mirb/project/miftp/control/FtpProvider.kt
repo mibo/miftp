@@ -49,6 +49,10 @@ class FtpProvider {
             .ttlInMilliseconds(ttlInMilliseconds)
             .cleanUpInterval(cleanupInterval)
             .create()
+
+    val keystoreFile =
+      if (keystoreName == null) keystoreName
+      else keystoreName!!.removePrefix("classpath:")
     val serverConfig = FtpServerConfig.with(port!!)
             .username(username)
             .password(password)
@@ -56,7 +60,7 @@ class FtpProvider {
             .pasvAddress(pasvAddress)
             .pasvExtAddress(pasvExtAddress)
             .fileSystemConfig(fsConfig)
-            .keystoreName(keystoreName)
+            .keystoreName(keystoreFile)
             .keystorePassword(keystorePassword)
             .build()
     val server = MiFtpServer(serverConfig)
