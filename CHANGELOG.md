@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 Planned changes/updates/fixes/features for to be part of one of the next _releases/versions_
 
+## [0.3.0-SNAPSHOT] - 2019-01-xx
+### Added
+  * Activated/configured _SSL_ for server REST endpoint
+  * Added options for _SSL_ address settings (req. for Docker)
+  * Updated Docker scripts (accordingly to the changes related to released artifact)
+
+## [0.2.0] - 2019-01-07
+### Added
+  * Added option for _pasv_ address settings (req. for Docker)
+  * Added Docker scripts into project (not related to released artifact)
+
 ## [0.1.1] - 2019-01-04
 ### Added
   * Support for _PASV_ port configuration (which is necessary for running in Docker container)
