@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 Planned changes/updates/fixes/features for to be part of one of the next _releases/versions_
 
+## [0.4.0] - 2019-01-19
+### Added
+  * Support for _URL (path) prefix_
+
+### Changed
+  * Changed from JavaScript view (index.html) to server side generated HTML (with `Thymeleaf`)
+
 ## [0.3.0] - 2019-01-16
 ### Added
   * Activated/configured _SSL_ for server REST endpoint
