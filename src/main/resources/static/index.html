@@ -16,7 +16,7 @@
           }
           var xmlhttp = new XMLHttpRequest();
           request = xmlhttp;
-          xmlhttp.open("GET", "/files");
+          xmlhttp.open("GET", "./files");
           xmlhttp.seenBytes = 0;
           xmlhttp.onreadystatechange = function () {
               if (this.readyState > 2) {
@@ -45,7 +45,7 @@
           xmlhttp.timeout = REQUEST_TIMEOUT_SEC * 1000;
           xmlhttp.ontimeout = function () {
               // XMLHttpRequest timed out. Do something here.
-              document.getElementById("state").innerHTML = "Failed to receive messages subscribed (timed out)...";
+              document.getElementById("state").innerHTML = "Failed to receive response (timed out)...";
           };
           //
           // send request

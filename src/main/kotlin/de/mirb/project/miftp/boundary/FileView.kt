@@ -1,40 +1,29 @@
 package de.mirb.project.miftp.boundary
 
-import org.apache.ftpserver.ftplet.FtpFile
-import org.springframework.http.MediaType
-import java.nio.ByteBuffer
+import de.mirb.project.miftp.control.FtpHandler
+import de.mirb.project.miftp.control.FtpProvider
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Controller
+import org.springframework.ui.Model
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.GetMapping
 
-data class FileView(val name: String, val lastModified: Long, val size: Long, private val ftpFile: FtpFile) {
-//  val name = ftpFile.name
-//  val lastModified = ftpFile.lastModified
-//  val size = ftpFile.size
 
-//  val ftpFile: ftpFile
+@Controller
+class FileView {
 
-  companion object Factory {
-    fun create(ftpFile: FtpFile) = FileView(ftpFile.name, ftpFile.lastModified, ftpFile.size, ftpFile)
-  }
+  @Autowired
+  lateinit var handler: FtpHandler
+  @Autowired
+  lateinit var ftpProvider: FtpProvider
 
-  fun isFile() = ftpFile.isFile
+  @GetMapping("/")
+  fun index(model: Model): String {
+    val user = ftpProvider.getUsername()
+    val files = handler.listFiles(user)
+    model.addAttribute("name", "sample")
+    model.addAttribute("files", files)
 
-  fun content(): ByteBuffer {
-    if(ftpFile.isFile) {
-      val ins = ftpFile.createInputStream(0)
-      //val ba = ByteArray()
-      return ByteBuffer.wrap(ins.buffered().use { it.readAllBytes() })
-    }
-    // TODO: check if return empty content is better
-    throw IllegalArgumentException("Unable to get content from directory")
-  }
-
-  fun contentType(): MediaType {
-    val lcName = name.toLowerCase()
-    if(lcName.endsWith("jpg") || lcName.endsWith("jpeg")) {
-      return MediaType.IMAGE_JPEG
-    }
-    if(lcName.endsWith("png")) {
-      return MediaType.IMAGE_PNG
-    }
-    return MediaType.APPLICATION_OCTET_STREAM
+    return "fileView"
   }
 }

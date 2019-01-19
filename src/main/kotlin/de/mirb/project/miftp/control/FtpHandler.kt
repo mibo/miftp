@@ -1,7 +1,7 @@
 package de.mirb.project.miftp.control
 
 import de.mirb.project.miftp.MiFtpServer
-import de.mirb.project.miftp.boundary.FileView
+import de.mirb.project.miftp.boundary.FileEndpoint
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.nio.ByteBuffer
@@ -10,20 +10,20 @@ import java.util.*
 @Component
 class FtpHandler @Autowired constructor(private val server: MiFtpServer) {
 
-  fun listFiles(user: String):List<FileView> {
+  fun listFiles(user: String):List<FileEndpoint> {
     val view = server.getFileSystemView(user)
-    return view.homeDirectory.listFiles().map { FileView.create(it) }
+    return view.homeDirectory.listFiles().map { FileEndpoint.create(it) }
   }
 
-  fun getFileById(user: String, id: String): Optional<FileView> {
+  fun getFileById(user: String, id: String): Optional<FileEndpoint> {
     println("Request file $id for user $user")
     val view = server.getFileSystemView(user)
     // FIXME: check if/how inefficient this is
 //    return view.homeDirectory.listFiles()
-//            .map { FileView.create(it) }
+//            .map { FileEndpoint.create(it) }
 //            .firstOrNull { it.name == id } ?: return null
     return Optional.ofNullable(view.homeDirectory.listFiles().firstOrNull { it.name == id })
-              .map { FileView.create(it) }
+              .map { FileEndpoint.create(it) }
   }
 
   fun getFileContentById(user: String, id: String): ByteBuffer? {

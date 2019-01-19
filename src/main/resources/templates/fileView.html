@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Basic InMemory FTP server</title>
+</head>
+
+<body>
+<div>
+  <h2>FTP server content</h2>
+  <h3>Files:</h3>
+</div>
+<div>
+  <table>
+  <thead>
+  <tr>
+    <th>Name</th>
+    <th>Date</th>
+    <th>Link</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="f : ${files}">
+    <td th:text="${f.name}">NAME</td>
+    <td th:text="${{f.lastModified}}">.</td>
+    <td><a th:href="'/files/' + ${f.name} + '/content'">link</a></td>
+  </tr>
+  </tbody>
+  </table>
+</div>
+</body>
+
+</html>

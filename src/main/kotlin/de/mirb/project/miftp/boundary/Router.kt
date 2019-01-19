@@ -37,7 +37,7 @@ class Router {
     }
   }
 
-  private fun fileView(user: String, id: String): Optional<FileView> {
+  private fun fileView(user: String, id: String): Optional<FileEndpoint> {
     return handler.getFileById(user, id)
   }
 }
