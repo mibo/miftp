@@ -22,8 +22,8 @@
   <tbody>
   <tr th:each="f : ${files}">
     <td th:text="${f.name}">NAME</td>
-    <td th:text="${{f.lastModified}}">.</td>
-    <td><a th:href="'/files/' + ${f.name} + '/content'">link</a></td>
+    <td th:text="${{f.lastModifiedFormatted}}">.</td>
+    <td><a th:href="'/files/' + ${f.name} + '/content'">Show image</a></td>
   </tr>
   </tbody>
   </table>

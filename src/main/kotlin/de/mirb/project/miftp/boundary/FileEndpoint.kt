@@ -3,7 +3,7 @@ package de.mirb.project.miftp.boundary
 import org.apache.ftpserver.ftplet.FtpFile
 import org.springframework.http.MediaType
 import java.nio.ByteBuffer
-import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.text.DateFormatter
 
@@ -14,13 +14,15 @@ data class FileEndpoint(val name: String, val lastModified: Long, val size: Long
 
 //  val ftpFile: ftpFile
 
+  val df = SimpleDateFormat("HH:mm, EEE, MMM d, ''yy")
+  val lastModifiedFormatted = df.format(Date(lastModified))
+
   companion object Factory {
     fun create(ftpFile: FtpFile) = FileEndpoint(ftpFile.name, ftpFile.lastModified, ftpFile.size, ftpFile)
   }
 
   fun isFile() = ftpFile.isFile
 
-//  fun lastModifiedFormatted() = DateFormatter().valueToString(Date(lastModified))
 
   fun content(): ByteBuffer {
     if(ftpFile.isFile) {
