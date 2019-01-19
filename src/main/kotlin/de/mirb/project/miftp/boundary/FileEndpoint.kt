@@ -5,7 +5,6 @@ import org.springframework.http.MediaType
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
-import javax.swing.text.DateFormatter
 
 data class FileEndpoint(val name: String, val lastModified: Long, val size: Long, private val ftpFile: FtpFile) {
 //  val name = ftpFile.name

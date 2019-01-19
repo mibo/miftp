@@ -20,8 +20,8 @@ class Router {
 
   @Bean
   fun route() = router {
-
     val user = ftpProvider.getUsername()
+
     GET("/files") { ServerResponse.ok().body(fromObject(handler.listFiles(user))) }
     GET("/files/{id}") {
       val id = it.pathVariable("id")

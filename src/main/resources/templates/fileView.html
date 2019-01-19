@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Basic InMemory FTP server</title>
+  <style>
+    table, th, td { border: 2px; }
+    th, td { padding: 5px; }
+    th { text-align: left; }
+    caption { text-align: left; }
+  </style>
 </head>
 
 <body>
@@ -23,7 +29,7 @@
   <tr th:each="f : ${files}">
     <td th:text="${f.name}">NAME</td>
     <td th:text="${{f.lastModifiedFormatted}}">.</td>
-    <td><a th:href="'/files/' + ${f.name} + '/content'">Show image</a></td>
+    <td><a th:href="${urlPrefix} + '/files/' + ${f.name} + '/content'">Show image</a></td>
   </tr>
   </tbody>
   </table>
