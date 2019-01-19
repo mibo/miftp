@@ -12,28 +12,27 @@
 </head>
 
 <body>
-<div>
-  <h2>FTP server content</h2>
-  <h3>Files:</h3>
-</div>
-<div>
-  <table>
-  <thead>
-  <tr>
-    <th>Name</th>
-    <th>Date</th>
-    <th>Link</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr th:each="f : ${files}">
-    <td th:text="${f.name}">NAME</td>
-    <td th:text="${{f.lastModifiedFormatted}}">.</td>
-    <td><a th:href="${urlPrefix} + '/files/' + ${f.name} + '/content'">Show image</a></td>
-  </tr>
-  </tbody>
-  </table>
-</div>
+  <div>
+    <h2>FTP server content</h2>
+  </div>
+  <div>
+    <table>
+    <thead>
+    <tr>
+      <th>Name</th>
+      <th>Date</th>
+      <th>Link</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="f : ${files}">
+      <td th:text="${f.name}">NAME</td>
+      <td th:text="${{f.lastModifiedFormatted}}">.</td>
+      <td><a th:href="${urlPrefix} + '/files/' + ${f.name} + '/content'">Show image</a></td>
+    </tr>
+    </tbody>
+    </table>
+  </div>
 </body>
 
 </html>

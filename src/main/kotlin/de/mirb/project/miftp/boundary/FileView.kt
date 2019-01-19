@@ -8,7 +8,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
 
-
 @Controller
 class FileView {
 
@@ -16,6 +15,7 @@ class FileView {
   lateinit var handler: FtpHandler
   @Autowired
   lateinit var ftpProvider: FtpProvider
+
   @Value("\${server.path.prefix:}")
   private var pathPrefix: String? = null
 

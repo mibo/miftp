@@ -1,5 +1,6 @@
 package de.mirb.project.miftp.boundary
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.apache.ftpserver.ftplet.FtpFile
 import org.springframework.http.MediaType
 import java.nio.ByteBuffer
@@ -13,8 +14,8 @@ data class FileEndpoint(val name: String, val lastModified: Long, val size: Long
 
 //  val ftpFile: ftpFile
 
-  val df = SimpleDateFormat("HH:mm, EEE, MMM d, ''yy")
-  val lastModifiedFormatted = df.format(Date(lastModified))
+  private val df = SimpleDateFormat("HH:mm, EEE, MMM d, ''yy")
+  @JsonIgnore val lastModifiedFormatted = df.format(Date(lastModified))
 
   companion object Factory {
     fun create(ftpFile: FtpFile) = FileEndpoint(ftpFile.name, ftpFile.lastModified, ftpFile.size, ftpFile)
