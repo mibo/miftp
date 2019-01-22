@@ -3,7 +3,7 @@ package de.mirb.project.miftp.fs;
 import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.ftpserver.ftplet.User;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -12,15 +12,12 @@ import java.util.List;
 /**
  * Created by mibo on 21.04.17.
  */
-public abstract class InMemoryFtpPath implements FtpFile {
+public class InMemoryFtpPath implements FtpFile {
 
   protected final InMemoryFtpDir parentDir;
   protected final String name;
   protected final User user;
-
-  private long lastModified;
-  private InMemoryByteArrayOutputStream bout;
-  private byte[] content;
+  protected long lastModified;
 
 
   public InMemoryFtpPath(InMemoryFtpDir parentDir, String name, User user) {
@@ -39,10 +36,28 @@ public abstract class InMemoryFtpPath implements FtpFile {
     if(parentDir == null) {
       return name;
     }
-    return parentDir.getAbsolutePath() + name;
+    String absolutePath = parentDir.getAbsolutePath();
+    if(absolutePath.endsWith("/")) {
+      return absolutePath + name;
+    }
+    return absolutePath + "/" + name;
   }
 
-  public abstract void cleanUpPath();
+  public void cleanUpPath() {
+    throw new IllegalStateException("Not supported on a Path instance.");
+  }
+
+  public boolean isFlushed() {
+    throw new IllegalStateException("Not supported on a Path instance.");
+  }
+
+  public InMemoryFtpDir asDir() {
+    throw new IllegalStateException("Not a directory.");
+  }
+
+  public InMemoryFtpFile asFile() {
+    throw new IllegalStateException("Not a file.");
+  }
 
   @Override
   public String getName() {
@@ -55,8 +70,18 @@ public abstract class InMemoryFtpPath implements FtpFile {
   }
 
   @Override
+  public boolean isDirectory() {
+    return false;
+  }
+
+  @Override
+  public boolean isFile() {
+    return false;
+  }
+
+  @Override
   public boolean doesExist() {
-    return true;
+    return false;
   }
 
   @Override
@@ -72,7 +97,7 @@ public abstract class InMemoryFtpPath implements FtpFile {
 
   @Override
   public boolean isRemovable() {
-    return isFlushed();
+    throw new IllegalStateException("Not supported on a Path instance.");
   }
 
   @Override
@@ -103,7 +128,8 @@ public abstract class InMemoryFtpPath implements FtpFile {
 
   @Override
   public long getSize() {
-    return getContent().length;
+    return 0;
+//    throw new IllegalStateException("Not supported on a Path instance.");
   }
 
   @Override
@@ -113,7 +139,8 @@ public abstract class InMemoryFtpPath implements FtpFile {
 
   @Override
   public boolean mkdir() {
-    return false;
+    parentDir.convertToDir(this);
+    return true;
   }
 
   @Override
@@ -132,36 +159,14 @@ public abstract class InMemoryFtpPath implements FtpFile {
   }
 
   @Override
-  public OutputStream createOutputStream(long l) {
-    bout = new InMemoryByteArrayOutputStream();
-    content = null;
-    lastModified = System.currentTimeMillis();
-    return bout;
+  public OutputStream createOutputStream(long offset) throws IOException {
+    InMemoryFtpFile file = parentDir.convertToFile(this);
+    return file.createOutputStream(offset);
   }
 
   @Override
-  public InputStream createInputStream(long l) {
-    return new ByteArrayInputStream(getContent());
-  }
-
-  private byte[] getContent() {
-    synchronized (name) {
-      if(isFlushed()) {
-        if(content == null) {
-          content = bout.toByteArray();
-        }
-      } else {
-        return new byte[0];
-      }
-    }
-    return content;
-  }
-
-  public boolean isFlushed() {
-    if(bout == null || bout.isClosed()) {
-      return true;
-    }
-    return false;
+  public InputStream createInputStream(long offset) throws IOException {
+    throw new IllegalStateException("Not supported on a Path instance.");
   }
 
   @Override

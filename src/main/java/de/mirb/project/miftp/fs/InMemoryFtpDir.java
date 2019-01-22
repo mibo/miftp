@@ -15,7 +15,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
 
   private static final Logger LOG = LoggerFactory.getLogger(InMemoryFtpDir.class);
 
-  private final Map<String, InMemoryFtpFile> name2File = new HashMap<>();
+  private final Map<String, InMemoryFtpPath> name2File = new HashMap<>();
   private final InMemoryFileSystemConfig config;
 
   public InMemoryFtpDir(String name, User user, InMemoryFileSystemConfig config) {
@@ -32,17 +32,35 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
     return true;
   }
 
+  public InMemoryFtpDir asDir() {
+    return this;
+  }
+
   @Override
   public boolean isFile() {
     return false;
   }
 
-  private InMemoryFtpFile createFile(String name) {
-    return new InMemoryFtpFile(this, name, user);
+  @Override
+  public boolean doesExist() {
+    return true;
   }
 
-  public InMemoryFtpFile grantFile(String name) {
-    return name2File.computeIfAbsent(name, this::createFile);
+  @Override
+  public boolean mkdir() {
+    // is already a directory
+    return false;
+  }
+
+  private InMemoryFtpPath createPath(String name) {
+    return new InMemoryFtpPath(this, name, user);
+  }
+
+  public InMemoryFtpPath grantPath(String name) {
+    if(LOG.isDebugEnabled()) {
+      LOG.debug("Grant path '{}' (exists={}).", name, name2File.containsKey(name));
+    }
+    return name2File.computeIfAbsent(name, this::createPath);
   }
 
   /**
@@ -54,7 +72,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
     cleanUpFiles();
     // recurse
     // TODO: only make sense if directories are supported (instead of `InMemoryFtpFile` then `InMemoryFtpPath`)
-    name2File.values().forEach(InMemoryFtpFile::cleanUpPath);
+    name2File.values().forEach(InMemoryFtpPath::cleanUpPath);
   }
 
   private void cleanUpFiles() {
@@ -72,7 +90,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
           maxMemoryInBytes, currentMemoryConsumption);
 
       while (currentMemoryConsumption > maxMemoryInBytes) {
-        InMemoryFtpFile removed = name2File.remove(getOldestFilesName());
+        InMemoryFtpPath removed = name2File.remove(getOldestFilesName());
         LOG.debug("Removed '{}' for '{}' bytes.", removed.getName(), removed.getSize());
         currentMemoryConsumption -= removed.getSize();
       }
@@ -86,7 +104,8 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
   }
 
   private void removeFilesOlderThen(long ttlInMilliseconds) {
-    List<InMemoryFtpFile> toRemove = name2File.values().stream()
+    List<InMemoryFtpPath> toRemove = name2File.values().stream()
+        .filter(InMemoryFtpPath::isFile)
         .filter(f -> (System.currentTimeMillis() - f.getLastModified()) > ttlInMilliseconds)
         .filter(InMemoryFtpPath::isRemovable)
         .peek((name) -> LOG.debug("Remove '{}' with timestamp '{}'", name.getName(), name.getLastModified()))
@@ -101,7 +120,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
       return 0;
     }
     return name2File.values().stream()
-        .collect(Collectors.summarizingLong(InMemoryFtpFile::getSize))
+        .collect(Collectors.summarizingLong(InMemoryFtpPath::getSize))
         .getSum();
   }
 
@@ -115,7 +134,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
       throw new IllegalStateException();
     }
     return name2File.values().stream()
-        .filter(InMemoryFtpFile::isFile)
+        .filter(InMemoryFtpPath::isFile)
         .filter(InMemoryFtpPath::isFlushed)
         .min((first, second) -> (int) ((int) first.getLastModified() - second.getLastModified()))
         .map(InMemoryFtpPath::getName).get();
@@ -139,5 +158,19 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
   @Override
   public List<FtpFile> listFiles() {
     return Collections.unmodifiableList(new ArrayList<>(name2File.values()));
+  }
+
+  public InMemoryFtpDir convertToDir(InMemoryFtpPath inMemoryFtpPath) {
+    LOG.debug("Convert '{}' in dir '{}' to directory.", inMemoryFtpPath, this);
+    InMemoryFtpDir dir = new InMemoryFtpDir(this, inMemoryFtpPath.getName(), inMemoryFtpPath.user, config);
+    name2File.replace(inMemoryFtpPath.getName(), dir);
+    return dir;
+  }
+
+  public InMemoryFtpFile convertToFile(InMemoryFtpPath inMemoryFtpPath) {
+    LOG.debug("Convert '{}' in dir '{}' to file.", inMemoryFtpPath, this);
+    InMemoryFtpFile file = new InMemoryFtpFile(this, inMemoryFtpPath.getName(), inMemoryFtpPath.user);
+    name2File.replace(inMemoryFtpPath.getName(), file);
+    return file;
   }
 }
