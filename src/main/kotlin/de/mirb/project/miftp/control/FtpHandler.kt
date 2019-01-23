@@ -26,6 +26,16 @@ class FtpHandler @Autowired constructor(private val server: MiFtpServer) {
               .map { FileEndpoint.create(it) }
   }
 
+  fun getFileByPath(user: String, path: String): Optional<FileEndpoint> {
+    println("Request file by path=$path for user $user")
+    val view = server.getFileSystemView(user)
+    view.changeWorkingDirectory("/")
+//    val paths = path.split("/")
+//    view.changeWorkingDirectory()
+    val file = view.getFile(path)
+    return Optional.ofNullable(if(file.isFile) file else null).map { FileEndpoint.create(it) }
+  }
+
   fun getFileContentById(user: String, id: String): ByteBuffer? {
     val view = getFileById(user, id).map { it.content() }
     // FIXME: check if/how inefficient this is

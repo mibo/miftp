@@ -23,7 +23,6 @@ data class FileEndpoint(val name: String, val lastModified: Long, val size: Long
 
   fun isFile() = ftpFile.isFile
 
-
   fun content(): ByteBuffer {
     if(ftpFile.isFile) {
       val ins = ftpFile.createInputStream(0)

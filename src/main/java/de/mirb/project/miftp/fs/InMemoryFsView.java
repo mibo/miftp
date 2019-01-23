@@ -7,9 +7,11 @@ import org.apache.ftpserver.ftplet.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 /**
  * Created by mibo on 21.04.17.
@@ -69,9 +71,6 @@ public class InMemoryFsView implements FileSystemView {
   @Override
   public InMemoryFtpPath getFile(String name) throws FtpException {
     LOG.debug("Get file for name '{}' in workingDir '{}'.", name, workingDir.getAbsolutePath());
-    if(name.startsWith("/")) {
-
-    }
     if(name.equals("./") || name.equals(".")) {
       return workingDir;
     } else if(workingDir.getAbsolutePath().equals(name)) {
@@ -82,6 +81,10 @@ public class InMemoryFsView implements FileSystemView {
 //        return workingDir;
 //      }
 //    }
+    if(name.charAt(0) == '/') {
+      LOG.debug("Grant path for name '{}' in home directory '{}'.", name, homeDir.getAbsolutePath());
+      return getFromAbsolutePath(name);
+    }
 
     if(name.startsWith(workingDir.getAbsolutePath())) {
       // FIXME: this does not allow directories
@@ -94,13 +97,29 @@ public class InMemoryFsView implements FileSystemView {
     }
     LOG.debug("Grant path for name '{}' in workingDir '{}'.", name, workingDir.getAbsolutePath());
     return workingDir.grantPath(name);
+  }
 
-//    if(name.startsWith(workingDir.getAbsolutePath())) {
-//      // FIXME: this does not allow directories
-//      String canonicalPath = name.substring(workingDir.getAbsolutePath().length());
-//      return workingDir.grantPath(canonicalPath);
-//    }
-//    return null;
+  private InMemoryFtpPath getFromAbsolutePath(String name) throws FtpException {
+    // absolute path
+    InMemoryFtpPath ftpFile = null;
+    String[] pathElements = name.substring(1).split("/");
+    Iterator<String> pe = Arrays.asList(pathElements).iterator();
+    List<InMemoryFtpPath> files = workingDir.listFiles();
+    while(pe.hasNext()) {
+      String pathName = pe.next();
+      Optional<InMemoryFtpPath> o = files.stream()
+          .filter(f -> f.getName().equals(pathName))
+          .findFirst();
+      if(o.isPresent()) {
+        ftpFile = o.get();
+        if(ftpFile.isDirectory()) {
+          files = ftpFile.listFiles();
+        }
+      } else {
+        return null;
+      }
+    }
+    return ftpFile;
   }
 
   @Override

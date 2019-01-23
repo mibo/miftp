@@ -154,7 +154,7 @@ public class InMemoryFtpPath implements FtpFile {
   }
 
   @Override
-  public List<FtpFile> listFiles() {
+  public List<InMemoryFtpPath> listFiles() {
     return Collections.emptyList();
   }
 

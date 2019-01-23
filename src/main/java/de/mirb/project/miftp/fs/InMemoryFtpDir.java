@@ -156,7 +156,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
 //  }
 
   @Override
-  public List<FtpFile> listFiles() {
+  public List<InMemoryFtpPath> listFiles() {
     return Collections.unmodifiableList(new ArrayList<>(name2File.values()));
   }
 
