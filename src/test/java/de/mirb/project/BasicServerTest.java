@@ -8,6 +8,7 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.util.KeyManagerUtils;
 import org.apache.commons.net.util.TrustManagerUtils;
 import org.apache.ftpserver.ftplet.FtpException;
+import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.mina.filter.ssl.KeyStoreFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -144,6 +145,40 @@ public class BasicServerTest {
     client.login(user, password);
     FTPFile[] files = client.listDirectories();
     assertEquals(0, files.length);
+
+    client.disconnect();
+  }
+
+  @Test
+  public void createDirectory() throws Exception {
+    FTPClient client = createFtpClient();
+    client.connect(hostname, serverPort);
+    client.login(user, password);
+    //
+    FTPFile[] files = client.listDirectories();
+    assertEquals(0, files.length);
+    String testDirName = "testDir";
+    boolean mkResult = client.makeDirectory(testDirName);
+    assertTrue(mkResult);
+    files = client.listDirectories();
+    assertEquals(1, files.length);
+    assertEquals(testDirName, files[0].getName());
+    assertTrue(client.changeWorkingDirectory(testDirName));
+    files = client.listDirectories();
+    assertEquals(0, files.length);
+    //
+    for (int i = 0; i < 10; i++) {
+      String pathname = testDirName + "-" + i;
+      assertTrue(client.makeDirectory(pathname));
+      FTPFile[] ftpFiles = client.listDirectories();
+      assertEquals(1, ftpFiles.length);
+      assertEquals(pathname, ftpFiles[0].getName());
+      assertTrue(client.changeWorkingDirectory(pathname));
+      ftpFiles = client.listDirectories();
+      assertEquals(0, ftpFiles.length);
+    }
+    //
+
 
     client.disconnect();
   }

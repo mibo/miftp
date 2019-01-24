@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.BodyInserters.fromObject
+import org.springframework.web.reactive.function.server.RouterFunctionDsl
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.router
 import java.util.*
@@ -23,21 +24,28 @@ class Router {
     val user = ftpProvider.getUsername()
 
     GET("/files") { ServerResponse.ok().body(fromObject(handler.listFiles(user))) }
-    GET("/files/{id}") {
+    GET("/files/{*id}") {
+      val content = it.queryParam("content").isPresent
       val id = it.pathVariable("id")
       val fileById = fileView(user, id)
-      return@GET fileById.map { file -> ok().body(fromObject(file)) }
-                          .orElseGet { notFound().build() }
+
+      return@GET fileById.map { file -> if(content) fileContent(file) else fileData(file) }
+              .orElseGet { notFound().build() }
     }
     GET("/files/{id}/content") {
       val id = it.pathVariable("id")
       val fileById = fileView(user, id)
-      return@GET fileById.map { file -> ok().contentType(file.contentType()).body(fromObject(file.content())) }
+      return@GET fileById.map { file -> fileContent(file) }
                           .orElseGet { notFound().build() }
     }
   }
 
-  private fun fileView(user: String, id: String): Optional<FileEndpoint> {
-    return handler.getFileById(user, id)
+  private fun RouterFunctionDsl.fileContent(file: FileEndpoint) =
+          ok().contentType(file.contentType()).body(fromObject(file.content()))
+
+  private fun RouterFunctionDsl.fileData(file: FileEndpoint) = ok().body(fromObject(file))
+
+  private fun fileView(user: String, path: String): Optional<FileEndpoint> {
+    return handler.getFileByPath(user, path)
   }
 }

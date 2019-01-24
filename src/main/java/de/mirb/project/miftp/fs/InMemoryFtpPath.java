@@ -3,7 +3,7 @@ package de.mirb.project.miftp.fs;
 import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.ftpserver.ftplet.User;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -12,26 +12,20 @@ import java.util.List;
 /**
  * Created by mibo on 21.04.17.
  */
-public abstract class InMemoryFtpPath implements FtpFile {
+public class InMemoryFtpPath implements FtpFile {
 
   protected final InMemoryFtpDir parentDir;
+  protected final InMemoryFsView fsView;
+
   protected final String name;
   protected final User user;
+  protected long lastModified;
 
-  private long lastModified;
-  private InMemoryByteArrayOutputStream bout;
-  private byte[] content;
-
-
-  public InMemoryFtpPath(InMemoryFtpDir parentDir, String name, User user) {
-    if(parentDir != null) {
-      if(name.equals("/")) {
-        parentDir = null;
-      }
-    }
+  public InMemoryFtpPath(InMemoryFsView view, InMemoryFtpDir parentDir, String name) {
+    this.fsView = view;
     this.parentDir = parentDir;
     this.name = name;
-    this.user = user;
+    this.user = view.getUser();
   }
 
   @Override
@@ -39,10 +33,33 @@ public abstract class InMemoryFtpPath implements FtpFile {
     if(parentDir == null) {
       return name;
     }
-    return parentDir.getAbsolutePath() + name;
+    String absolutePath = parentDir.getAbsolutePath();
+    if(absolutePath.endsWith("/")) {
+      absolutePath += name;
+    } else {
+      absolutePath += "/" + name;
+    }
+//    if(isDirectory()) {
+//      absolutePath += "/";
+//    }
+    return absolutePath;
   }
 
-  public abstract void cleanUpPath();
+  public void cleanUpPath() {
+    throw new IllegalStateException("Not supported on a Path instance.");
+  }
+
+  public boolean isFlushed() {
+    throw new IllegalStateException("Not supported on a Path instance.");
+  }
+
+  public InMemoryFtpDir asDir() {
+    throw new IllegalStateException("Not a directory.");
+  }
+
+  public InMemoryFtpFile asFile() {
+    throw new IllegalStateException("Not a file.");
+  }
 
   @Override
   public String getName() {
@@ -55,8 +72,18 @@ public abstract class InMemoryFtpPath implements FtpFile {
   }
 
   @Override
+  public boolean isDirectory() {
+    return false;
+  }
+
+  @Override
+  public boolean isFile() {
+    return false;
+  }
+
+  @Override
   public boolean doesExist() {
-    return true;
+    return false;
   }
 
   @Override
@@ -72,7 +99,7 @@ public abstract class InMemoryFtpPath implements FtpFile {
 
   @Override
   public boolean isRemovable() {
-    return isFlushed();
+    throw new IllegalStateException("Not supported on a Path instance.");
   }
 
   @Override
@@ -103,7 +130,8 @@ public abstract class InMemoryFtpPath implements FtpFile {
 
   @Override
   public long getSize() {
-    return getContent().length;
+    return 0;
+//    throw new IllegalStateException("Not supported on a Path instance.");
   }
 
   @Override
@@ -113,7 +141,8 @@ public abstract class InMemoryFtpPath implements FtpFile {
 
   @Override
   public boolean mkdir() {
-    return false;
+    parentDir.convertToDir(this);
+    return true;
   }
 
   @Override
@@ -127,46 +156,25 @@ public abstract class InMemoryFtpPath implements FtpFile {
   }
 
   @Override
-  public List<FtpFile> listFiles() {
+  public List<InMemoryFtpPath> listFiles() {
     return Collections.emptyList();
   }
 
   @Override
-  public OutputStream createOutputStream(long l) {
-    bout = new InMemoryByteArrayOutputStream();
-    content = null;
-    lastModified = System.currentTimeMillis();
-    return bout;
+  public OutputStream createOutputStream(long offset) throws IOException {
+    InMemoryFtpFile file = parentDir.convertToFile(this);
+    return file.createOutputStream(offset);
   }
 
   @Override
-  public InputStream createInputStream(long l) {
-    return new ByteArrayInputStream(getContent());
-  }
-
-  private byte[] getContent() {
-    synchronized (name) {
-      if(isFlushed()) {
-        if(content == null) {
-          content = bout.toByteArray();
-        }
-      } else {
-        return new byte[0];
-      }
-    }
-    return content;
-  }
-
-  public boolean isFlushed() {
-    if(bout == null || bout.isClosed()) {
-      return true;
-    }
-    return false;
+  public InputStream createInputStream(long offset) throws IOException {
+    throw new IllegalStateException("Not supported on a Path instance.");
   }
 
   @Override
   public String toString() {
-    return "Path {parentDir='" +
+    String type = isFile()? "File": isDirectory()? "Dir": "<path>";
+    return type + " {parentDir='" +
         (parentDir == null ? "<root> ": parentDir.getAbsolutePath()) +
         "', name='" + name + "'}";
   }
