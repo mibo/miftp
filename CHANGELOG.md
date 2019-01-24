@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 Planned changes/updates/fixes/features for to be part of one of the next _releases/versions_
 
+## [0.5.0] - 2019-01-24
+### Added
+  * Support for Directories in FTP Server
+  * Support for Directories in REST Server (Index HTML Page)
+
+### Changed
+  * Layout and content of Index HTML Page
+
 ## [0.4.0] - 2019-01-19
 ### Added
   * Support for _URL (path) prefix_
