@@ -54,6 +54,12 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
     return false;
   }
 
+  @Override
+  public long getSize() {
+    return name2File.values().stream()
+        .collect(Collectors.summarizingLong(InMemoryFtpPath::getSize)).getSum();
+  }
+
   private InMemoryFtpPath createPath(String name) {
     return new InMemoryFtpPath(fsView, this, name);
   }

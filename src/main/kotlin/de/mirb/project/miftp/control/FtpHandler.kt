@@ -2,6 +2,7 @@ package de.mirb.project.miftp.control
 
 import de.mirb.project.miftp.MiFtpServer
 import de.mirb.project.miftp.boundary.FileEndpoint
+import org.apache.ftpserver.ftplet.FtpFile
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.nio.ByteBuffer
@@ -12,8 +13,19 @@ class FtpHandler @Autowired constructor(private val server: MiFtpServer) {
 
   fun listFiles(user: String):List<FileEndpoint> {
     val view = server.getFileSystemView(user)
-    return view.homeDirectory.listFiles().map { FileEndpoint.create(it) }
+
+//    return view.homeDirectory.listFiles().map { FileEndpoint.create(it) }
+    return getFlatFileListRecursive(view.homeDirectory).map { FileEndpoint.create(it) }
   }
+
+  private fun getFlatFileListRecursive(file: FtpFile): List<FtpFile> {
+    val partitioned = file.listFiles().partition { it.isFile }
+    return partitioned.first
+            .plus(partitioned.second)
+            .plus(getFlatFileListRecursive(partitioned.second))
+  }
+
+  private fun getFlatFileListRecursive(files: List<FtpFile>): List<FtpFile> = files.flatMap { getFlatFileListRecursive(it) }
 
   fun getFileById(user: String, id: String): Optional<FileEndpoint> {
     println("Request file $id for user $user")

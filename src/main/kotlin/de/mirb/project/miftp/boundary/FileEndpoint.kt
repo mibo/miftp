@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
 
-data class FileEndpoint(val name: String, val lastModified: Long, val size: Long, private val ftpFile: FtpFile) {
+data class FileEndpoint(val name: String, val absolutePath: String, val lastModified: Long, val size: Long, private val ftpFile: FtpFile) {
 //  val name = ftpFile.name
 //  val lastModified = ftpFile.lastModified
 //  val size = ftpFile.size
@@ -18,7 +18,7 @@ data class FileEndpoint(val name: String, val lastModified: Long, val size: Long
   @JsonIgnore val lastModifiedFormatted = df.format(Date(lastModified))
 
   companion object Factory {
-    fun create(ftpFile: FtpFile) = FileEndpoint(ftpFile.name, ftpFile.lastModified, ftpFile.size, ftpFile)
+    fun create(ftpFile: FtpFile) = FileEndpoint(ftpFile.name, ftpFile.absolutePath, ftpFile.lastModified, ftpFile.size, ftpFile)
   }
 
   fun isFile() = ftpFile.isFile

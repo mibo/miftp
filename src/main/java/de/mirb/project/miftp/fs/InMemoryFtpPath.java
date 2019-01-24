@@ -26,6 +26,7 @@ public class InMemoryFtpPath implements FtpFile {
     this.parentDir = parentDir;
     this.name = name;
     this.user = view.getUser();
+    this.lastModified = System.currentTimeMillis();
   }
 
   @Override
