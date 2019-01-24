@@ -53,7 +53,13 @@ public class InMemoryFsView implements FileSystemView {
   void updatePath(InMemoryFtpPath path) {
     LOG.debug("Updated path '{}'", path);
     name2Path.put(path.getAbsolutePath(), path);
-    LOG.debug(name2Path.toString());
+//    LOG.debug(name2Path.toString());
+  }
+
+  void removePath(InMemoryFtpPath path) {
+    LOG.debug("Remove path '{}'", path);
+    name2Path.remove(path.getAbsolutePath());
+//    LOG.debug(name2Path.toString());
   }
 
   @Override
@@ -111,22 +117,6 @@ public class InMemoryFsView implements FileSystemView {
         workingDir.getAbsolutePath() + "/" + name;
     LOG.debug("Grant path for absolute path '{}' in workingDir '{}'.", absolutePath, workingDir.getAbsolutePath());
     return getFromAbsolutePath(absolutePath);
-//    InMemoryFtpPath foundPath = name2Path.get(absolutePath);
-//    // check parent if not found
-//    if(foundPath == null) {
-//      int lastSlash = absolutePath.lastIndexOf('/');
-//      String parentDir = absolutePath.substring(0, lastSlash);
-//      InMemoryFtpPath path = name2Path.get(parentDir);
-//      if(path == null) {
-//        throw new FtpException("Given path '" + name + "' (absolute path '" + absolutePath + "'" +
-//            "' does not exists neither parent path exists.");
-//      }
-//      LOG.debug("Grant path for name '{}' in workingDir '{}'.", name, workingDir.getAbsolutePath());
-//      return path;
-//    }
-//    LOG.debug("Found path for name '{}' in workingDir '{}'.", name, workingDir.getAbsolutePath());
-//    return foundPath;
-//    }
   }
 
   private InMemoryFtpPath getFromAbsolutePath(String absolutePath) throws FtpException {

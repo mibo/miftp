@@ -82,7 +82,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
       LOG.debug("Run cleanup path for max files '{}' with current '{}' files listed.",
           config.getMaxFiles(), name2File.size());
       // remove oldest
-      name2File.remove(getOldestFilesName());
+      removeFile(getOldestFilesName());
     }
     // check max memory size
     long maxMemoryInBytes = config.getMaxMemoryInBytes();
@@ -92,7 +92,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
           maxMemoryInBytes, currentMemoryConsumption);
 
       while (currentMemoryConsumption > maxMemoryInBytes) {
-        InMemoryFtpPath removed = name2File.remove(getOldestFilesName());
+        InMemoryFtpPath removed = removeFile(getOldestFilesName());
         LOG.debug("Removed '{}' for '{}' bytes.", removed.getName(), removed.getSize());
         currentMemoryConsumption -= removed.getSize();
       }
@@ -105,6 +105,12 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
     }
   }
 
+  private InMemoryFtpPath removeFile(String name) {
+    InMemoryFtpPath removed = name2File.remove(name);
+    fsView.removePath(removed);
+    return removed;
+  }
+
   private void removeFilesOlderThen(long ttlInMilliseconds) {
     List<InMemoryFtpPath> toRemove = name2File.values().stream()
         .filter(InMemoryFtpPath::isFile)
@@ -114,7 +120,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
 //        .peek((name) -> LOG.debug("Remove {}", name))
         .collect(Collectors.toList());
 
-    toRemove.forEach(f -> name2File.remove(f.getName()));
+    toRemove.forEach(f -> removeFile(f.getName()));
   }
 
   private long currentMemoryConsumption() {
