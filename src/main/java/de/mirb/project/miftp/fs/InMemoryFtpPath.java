@@ -15,20 +15,17 @@ import java.util.List;
 public class InMemoryFtpPath implements FtpFile {
 
   protected final InMemoryFtpDir parentDir;
+  protected final InMemoryFsView fsView;
+
   protected final String name;
   protected final User user;
   protected long lastModified;
 
-
-  public InMemoryFtpPath(InMemoryFtpDir parentDir, String name, User user) {
-    if(parentDir != null) {
-      if(name.equals("/")) {
-        parentDir = null;
-      }
-    }
+  public InMemoryFtpPath(InMemoryFsView view, InMemoryFtpDir parentDir, String name) {
+    this.fsView = view;
     this.parentDir = parentDir;
     this.name = name;
-    this.user = user;
+    this.user = view.getUser();
   }
 
   @Override
@@ -38,9 +35,14 @@ public class InMemoryFtpPath implements FtpFile {
     }
     String absolutePath = parentDir.getAbsolutePath();
     if(absolutePath.endsWith("/")) {
-      return absolutePath + name;
+      absolutePath += name;
+    } else {
+      absolutePath += "/" + name;
     }
-    return absolutePath + "/" + name;
+//    if(isDirectory()) {
+//      absolutePath += "/";
+//    }
+    return absolutePath;
   }
 
   public void cleanUpPath() {
@@ -171,7 +173,8 @@ public class InMemoryFtpPath implements FtpFile {
 
   @Override
   public String toString() {
-    return "Path {parentDir='" +
+    String type = isFile()? "File": isDirectory()? "Dir": "<path>";
+    return type + " {parentDir='" +
         (parentDir == null ? "<root> ": parentDir.getAbsolutePath()) +
         "', name='" + name + "'}";
   }

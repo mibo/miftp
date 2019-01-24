@@ -14,8 +14,8 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
   private InMemoryByteArrayOutputStream bout;
   private byte[] content;
 
-  public InMemoryFtpFile(InMemoryFtpDir parentDir, String name, User user) {
-    super(parentDir, name, user);
+  public InMemoryFtpFile(InMemoryFsView view, InMemoryFtpDir parentDir, String name) {
+    super(view, parentDir, name);
   }
 
   @Override

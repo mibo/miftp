@@ -1,7 +1,5 @@
 package de.mirb.project.miftp.fs;
 
-import org.apache.ftpserver.ftplet.FtpFile;
-import org.apache.ftpserver.ftplet.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,22 +16,26 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
   private final Map<String, InMemoryFtpPath> name2File = new HashMap<>();
   private final InMemoryFileSystemConfig config;
 
-  public InMemoryFtpDir(String name, User user, InMemoryFileSystemConfig config) {
-    this(null, name, user, config);
+  public InMemoryFtpDir(InMemoryFsView view, String name) {
+    this(view, null, name);
   }
 
-  public InMemoryFtpDir(InMemoryFtpDir parentDir, String name, User user, InMemoryFileSystemConfig config) {
-    super(parentDir, name, user);
-    this.config = config;
+  public InMemoryFtpDir(InMemoryFsView view, InMemoryFtpDir parentDir, String name) {
+    super(view, parentDir, name);
+    this.config = view.getConfig();
+  }
+
+  public InMemoryFtpDir asDir() {
+    return this;
+  }
+
+  public boolean isRootDir() {
+    return parentDir == null;
   }
 
   @Override
   public boolean isDirectory() {
     return true;
-  }
-
-  public InMemoryFtpDir asDir() {
-    return this;
   }
 
   @Override
@@ -53,7 +55,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
   }
 
   private InMemoryFtpPath createPath(String name) {
-    return new InMemoryFtpPath(this, name, user);
+    return new InMemoryFtpPath(fsView, this, name);
   }
 
   public InMemoryFtpPath grantPath(String name) {
@@ -162,15 +164,17 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
 
   public InMemoryFtpDir convertToDir(InMemoryFtpPath inMemoryFtpPath) {
     LOG.debug("Convert '{}' in dir '{}' to directory.", inMemoryFtpPath, this);
-    InMemoryFtpDir dir = new InMemoryFtpDir(this, inMemoryFtpPath.getName(), inMemoryFtpPath.user, config);
-    name2File.replace(inMemoryFtpPath.getName(), dir);
+    InMemoryFtpDir dir = new InMemoryFtpDir(fsView, this, inMemoryFtpPath.getName());
+    name2File.put(inMemoryFtpPath.getName(), dir);
+    fsView.updatePath(dir);
     return dir;
   }
 
   public InMemoryFtpFile convertToFile(InMemoryFtpPath inMemoryFtpPath) {
     LOG.debug("Convert '{}' in dir '{}' to file.", inMemoryFtpPath, this);
-    InMemoryFtpFile file = new InMemoryFtpFile(this, inMemoryFtpPath.getName(), inMemoryFtpPath.user);
-    name2File.replace(inMemoryFtpPath.getName(), file);
+    InMemoryFtpFile file = new InMemoryFtpFile(fsView, this, inMemoryFtpPath.getName());
+    name2File.put(inMemoryFtpPath.getName(), file);
+    fsView.updatePath(file);
     return file;
   }
 }
