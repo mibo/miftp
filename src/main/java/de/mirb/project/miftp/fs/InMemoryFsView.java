@@ -53,13 +53,13 @@ public class InMemoryFsView implements FileSystemView {
   void updatePath(InMemoryFtpPath path) {
     LOG.debug("Updated path '{}'", path);
     name2Path.put(path.getAbsolutePath(), path);
-//    LOG.debug(name2Path.toString());
+//    LOG.debug("Paths after update: " + name2Path.toString());
   }
 
   void removePath(InMemoryFtpPath path) {
     LOG.debug("Remove path '{}'", path);
     name2Path.remove(path.getAbsolutePath());
-//    LOG.debug(name2Path.toString());
+//    LOG.debug("Paths after removal: " + name2Path.toString());
   }
 
   @Override
@@ -111,6 +111,9 @@ public class InMemoryFsView implements FileSystemView {
     if(name.startsWith("./")) {
       name = name.substring(2);
     }
+    if(name.endsWith("/")) {
+      name = name.substring(0, name.length() - 1);
+    }
 
     String absolutePath = workingDir.isRootDir()?
         workingDir.getAbsolutePath() + name:
@@ -127,7 +130,7 @@ public class InMemoryFsView implements FileSystemView {
       String name = absolutePath.substring(lastSlash + 1);
       InMemoryFtpPath path = name2Path.get(parentDir);
       if(path == null) {
-        String msg = "Given absolute path '" + absolutePath + "'' does not exists neither parent path exists.";
+        String msg = "Given absolute path '" + absolutePath + "' does not exists neither parent path exists.";
         LOG.warn(msg);
         throw new FtpException(msg);
       } else if(path.isFile()) {

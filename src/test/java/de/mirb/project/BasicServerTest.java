@@ -12,6 +12,7 @@ import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.mina.filter.ssl.KeyStoreFactory;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -178,8 +179,50 @@ public class BasicServerTest {
       assertEquals(0, ftpFiles.length);
     }
     //
+    client.disconnect();
+  }
 
+  @Test
+  public void createDirectoryEndingSlash() throws Exception {
+    FTPClient client = createFtpClient();
+    client.connect(hostname, serverPort);
+    client.login(user, password);
+    //
+    FTPFile[] files = client.listDirectories();
+    assertEquals(0, files.length);
+    String testDirName = "testDir";
+    boolean mkResult = client.makeDirectory(testDirName + "/");
+    assertTrue(mkResult);
+    files = client.listDirectories();
+    assertEquals(1, files.length);
+    assertEquals(testDirName, files[0].getName());
+    assertTrue(client.changeWorkingDirectory(testDirName));
+    files = client.listDirectories();
+    assertEquals(0, files.length);
+    //
+    client.disconnect();
+  }
 
+  @Test
+  @Ignore("not yet supported")
+  public void createDirectoryMultiPath() throws Exception {
+    FTPClient client = createFtpClient();
+    client.connect(hostname, serverPort);
+    client.login(user, password);
+    //
+    FTPFile[] files = client.listDirectories();
+    assertEquals(0, files.length);
+    String pathOne = "first";
+    String pathTwo = "second";
+    boolean mkResult = client.makeDirectory(pathOne + "/" + pathTwo);
+    assertTrue(mkResult);
+    files = client.listDirectories();
+    assertEquals(1, files.length);
+    assertEquals(pathOne, files[0].getName());
+    assertTrue(client.changeWorkingDirectory(pathOne));
+    files = client.listDirectories();
+    assertEquals(0, files.length);
+    //
     client.disconnect();
   }
 
