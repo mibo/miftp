@@ -19,26 +19,21 @@
     <table>
     <thead>
     <tr>
-      <th>Path</th>
       <th>Name</th>
       <th>Date</th>
-      <!--<th>Size</th>-->
-      <th>Link</th>
+      <th>Size</th>
+      <th>Full Path</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="f : ${files}">
-      <td th:text="${f.absolutePath}">Path</td>
-      <td th:text="${f.name}">NAME</td>
-      <!--<td th:switch="${f.file}">-->
-        <!--<a th:case="${true}" th:text="${f.name}" th:href="${urlPrefix} + '/files' + ${f.absolutePath} + '?content'">Show content</a>-->
-        <!--<a th:case="${false}" th:text="${f.name}" th:href="${urlPrefix} + '/files' + ${f.absolutePath}">List Directory</a>-->
-      <!--</td>-->
-      <td th:text="${{f.lastModifiedFormatted}}">.</td>
       <td th:switch="${f.file}">
-        <a th:case="${true}" th:href="${urlPrefix} + '/files' + ${f.absolutePath} + '?content'">Show content</a>
-        <a th:case="${false}" th:href="${urlPrefix} + '/files' + ${f.absolutePath}">List Directory</a>
+        <a th:case="${true}" th:text="${f.name}" th:href="${urlPrefix} + '/files' + ${f.absolutePath} + '?content'">Show content</a>
+        <a th:case="${false}" th:text="${f.name}" th:href="${urlPrefix} + '/files' + ${f.absolutePath}">List Directory</a>
       </td>
+      <td th:text="${{f.lastModifiedFormatted}}">.</td>
+      <td th:text="${{f.size}}">Size</td>
+      <td th:text="${f.absolutePath}">Path</td>
     </tr>
     </tbody>
     </table>
