@@ -204,7 +204,7 @@ public class BasicServerTest {
   }
 
   @Test
-  @Ignore("not yet supported")
+//  @Ignore("not yet supported")
   public void createDirectoryMultiPath() throws Exception {
     FTPClient client = createFtpClient();
     client.connect(hostname, serverPort);
@@ -221,7 +221,7 @@ public class BasicServerTest {
     assertEquals(pathOne, files[0].getName());
     assertTrue(client.changeWorkingDirectory(pathOne));
     files = client.listDirectories();
-    assertEquals(0, files.length);
+    assertEquals(1, files.length);
     //
     client.disconnect();
   }

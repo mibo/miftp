@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 Planned changes/updates/fixes/features for to be part of one of the next _releases/versions_
 
+## [0.6.0-SNAPSHOT] - 2019-01-xx
+### Added
+  * Support for creation of absolute path with not existing parent directories in FTP Server
+    * In such cases all not existing path elements are automatically created
+
 ## [0.5.0] - 2019-01-24
 ### Added
   * Support for Directories in FTP Server

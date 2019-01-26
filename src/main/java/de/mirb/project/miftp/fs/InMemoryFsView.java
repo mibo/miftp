@@ -105,7 +105,7 @@ public class InMemoryFsView implements FileSystemView {
 
     if(name.charAt(0) == '/') {
       LOG.debug("Grant path for name '{}' in home directory '{}'.", name, homeDir.getAbsolutePath());
-      return getFromAbsolutePath(name);
+      return grantAbsolutePath(name);
     }
 
     if(name.startsWith("./")) {
@@ -119,32 +119,56 @@ public class InMemoryFsView implements FileSystemView {
         workingDir.getAbsolutePath() + name:
         workingDir.getAbsolutePath() + "/" + name;
     LOG.debug("Grant path for absolute path '{}' in workingDir '{}'.", absolutePath, workingDir.getAbsolutePath());
-    return getFromAbsolutePath(absolutePath);
+    return grantAbsolutePath(absolutePath);
   }
 
-  private InMemoryFtpPath getFromAbsolutePath(String absolutePath) throws FtpException {
-    InMemoryFtpPath foundPath = name2Path.get(absolutePath);
-    if(foundPath == null) {
-      int lastSlash = absolutePath.lastIndexOf('/');
-      String parentDir = lastSlash == 0? "/": absolutePath.substring(0, lastSlash);
-      String name = absolutePath.substring(lastSlash + 1);
-      InMemoryFtpPath path = name2Path.get(parentDir);
-      if(path == null) {
-        String msg = "Given absolute path '" + absolutePath + "' does not exists neither parent path exists.";
-        LOG.warn(msg);
-        throw new FtpException(msg);
-      } else if(path.isFile()) {
-        String msg = "Related parent path '" + parentDir + "' is not a directory.";
+  private InMemoryFtpPath grantAbsolutePath(String absolutePath) throws FtpException {
+    int lastSlash = absolutePath.lastIndexOf('/');
+    String parentDir = lastSlash == 0 ? "/" : absolutePath.substring(0, lastSlash);
+    String parentName = absolutePath.substring(lastSlash + 1);
+    return grantPathFor(parentDir, parentName);
+  }
+
+  /**
+   * Parent path and name.
+   * Parent path without ending 'slash' and name without starting or ending 'slash'.
+   * Example:
+   *  - absoluteParentPath: '/absolute/Parent/Path'
+   *  - name: 'myNewFolder'
+   *
+   * @param absoluteParentPath path for parent (ATTENTION: must NOT end with a 'slash')
+   * @param name name of to be granted path (ATTENTION: must NOT end OR START with a 'slash')
+   * @return new or already existing path
+   */
+  private InMemoryFtpPath grantPathFor(String absoluteParentPath, String name) throws FtpException {
+    String absolutePath = absoluteParentPath.equals("/") ?
+        absoluteParentPath + name:
+        absoluteParentPath + "/" + name;
+    InMemoryFtpPath granted = name2Path.get(absolutePath);
+
+    if(granted == null) {
+      InMemoryFtpPath parentPath = name2Path.get(absoluteParentPath);
+      if(parentPath == null) {
+        parentPath = grantAbsolutePath(absoluteParentPath);
+//        int lastSlash = absoluteParentPath.lastIndexOf('/');
+//        String parentDir = lastSlash == 0 ? "/" : absoluteParentPath.substring(0, lastSlash);
+//        String parentName = absoluteParentPath.substring(lastSlash + 1);
+//        parentPath = grantPathFor(parentDir, parentName);
+      }
+      if(parentPath.isFile()) {
+        String msg = "Related parent path '" + parentPath + "' is not a directory.";
         LOG.warn(msg);
         throw new FtpException(msg);
       }
-      LOG.debug("Grant path for absolutePath '{}' in dir '{}'.", absolutePath, path.getAbsolutePath());
-      InMemoryFtpPath createdPath = new InMemoryFtpPath(this, path.asDir(), name);
+      //
+      LOG.debug("Grant path for name '{}' in dir '{}'.", name, parentPath.getAbsolutePath());
+      InMemoryFtpPath createdPath = new InMemoryFtpPath(this, parentPath.asDir(), name);
       name2Path.put(absolutePath, createdPath);
       return createdPath;
     }
-    LOG.debug("Found file for absolutePath '{}' in as '{}'.", absolutePath, foundPath);
-    return foundPath;
+
+    LOG.debug("Found existing path for '{}' as '{}'.", name, absolutePath);
+    return granted;
   }
 
   @Override

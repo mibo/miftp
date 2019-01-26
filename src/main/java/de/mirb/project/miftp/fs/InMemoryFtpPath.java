@@ -55,7 +55,12 @@ public class InMemoryFtpPath implements FtpFile {
   }
 
   public InMemoryFtpDir asDir() {
-    throw new IllegalStateException("Not a directory.");
+    if(isFile()) {
+      throw new IllegalStateException("This is a file and not a directory.");
+    } else {
+//      fsView.getConfig().isCreateParentDirSupported()
+      return parentDir.convertToDir(this);
+    }
   }
 
   public InMemoryFtpFile asFile() {
@@ -142,8 +147,12 @@ public class InMemoryFtpPath implements FtpFile {
 
   @Override
   public boolean mkdir() {
-    parentDir.convertToDir(this);
-    return true;
+    try {
+      asDir();
+      return true;
+    } catch (IllegalStateException ex) {
+      return false;
+    }
   }
 
   @Override
