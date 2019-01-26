@@ -81,6 +81,9 @@ public class InMemoryFsView implements FileSystemView {
       workingDir = getHomeDirectory();
       LOG.debug("Changed to home dir '{}'.", workingDir);
     } else {
+      if(path.endsWith("/")) {
+        path = path.substring(0, path.length()-1);
+      }
       InMemoryFtpPath p = getFile(path);
       LOG.debug("Try to change working dir to '{}'.", p);
       if(p.isDirectory()) {
@@ -123,6 +126,9 @@ public class InMemoryFsView implements FileSystemView {
   }
 
   private InMemoryFtpPath grantAbsolutePath(String absolutePath) throws FtpException {
+    if(!absolutePath.equals("/") && absolutePath.endsWith("/")) {
+      absolutePath = absolutePath.substring(0, absolutePath.length()-1);
+    }
     int lastSlash = absolutePath.lastIndexOf('/');
     String parentDir = lastSlash == 0 ? "/" : absolutePath.substring(0, lastSlash);
     String parentName = absolutePath.substring(lastSlash + 1);

@@ -150,6 +150,36 @@ public class BasicServerTest {
     client.disconnect();
   }
 
+
+  @Test
+  public void createDirectoryAndCwdEndingSlash() throws Exception {
+    FTPClient client = createFtpClient();
+    client.connect(hostname, serverPort);
+    client.login(user, password);
+    //
+    FTPFile[] files = client.listDirectories();
+    assertEquals(0, files.length);
+    String testDirName = "testDir";
+    boolean mkResult = client.makeDirectory(testDirName + "/");
+    assertTrue(mkResult);
+    files = client.listDirectories();
+    assertEquals(1, files.length);
+    assertEquals(testDirName, files[0].getName());
+    assertTrue(client.changeWorkingDirectory(testDirName));
+    files = client.listDirectories();
+    assertEquals(0, files.length);
+    assertTrue(client.makeDirectory("testSubDir"));
+    //
+    client.disconnect();
+    //
+    client.connect(hostname, serverPort);
+    client.login(user, password);
+    //
+    assertTrue(client.changeWorkingDirectory("/" + testDirName + "/"));
+    files = client.listDirectories();
+    assertEquals(1, files.length);
+  }
+
   @Test
   public void createDirectory() throws Exception {
     FTPClient client = createFtpClient();
