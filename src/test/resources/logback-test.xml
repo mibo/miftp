@@ -12,7 +12,11 @@
     <appender-ref ref="STDOUT"/>
   </root>
 
-  <logger name="org.apache.ftpserver" level="INFO"/>
-  <logger name="de.mirb.project.miftp" level="DEBUG"/>
-  <logger name="org.springframework" level="INFO"/>
+  <variable name="MIFTP_LOG_LEVEL" value="${MIFTP_LOG_LEVEL:-INFO}" />
+  <variable name="MIFTP_FTP_LOG_LEVEL" value="${MIFTP_FTP_LOG_LEVEL:-INFO}" />
+  <variable name="MIFTP_SPRING_LOG_LEVEL" value="${MIFTP_SPRING_LOG_LEVEL:-INFO}" />
+
+  <logger name="de.mirb.project.miftp" level="${MIFTP_LOG_LEVEL}"/>
+  <logger name="org.apache.ftpserver" level="${MIFTP_FTP_LOG_LEVEL}"/>
+  <logger name="org.springframework" level="${MIFTP_SPRING_LOG_LEVEL}"/>
 </configuration>

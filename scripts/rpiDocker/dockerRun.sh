@@ -10,6 +10,10 @@ echo "Start with $IMAGE"
 #  -e HTTP_PORT=8080 \
 #  -e MIFTP_FTP_PORT=50021 \
 
+## Set log level via env
+#   -e MIFTP_LOG_LEVEL=DEBUG
+#   -e MIFTP_FTP_LOG_LEVEL=DEBUG
+#   -e MIFTP_SPRING_LOG_LEVEL=DEBUG
 
 docker run --rm \
   -p 8081:8081 -p 50021:50021 \

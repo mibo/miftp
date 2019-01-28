@@ -48,6 +48,16 @@ Build a embedded in-memory FTP server with REST endpoint.
 
 == Helpful...
 
+=== Configure log level via ENV
+
+The `logback` configuration supports `LOG` level configuration via ENV params.
+
+Therefore the following ENV variables can be set for:
+
+  * MIFTP_LOG_LEVEL (default value=INFO) for setting "de.mirb.project.miftp" logger (base)
+  * MIFTP_FTP_LOG_LEVEL (default value=INFO) for setting "org.apache.ftpserver" logger (FTP server)
+  * MIFTP_SPRING_LOG_LEVEL (default value=INFO) for setting "org.springframework" logger (base)
+
 === Technical details
 
 .Generate a Self Signed Certificate using Java Keytool

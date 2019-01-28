@@ -11,6 +11,7 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
 ### Added
   * Support for creation of absolute path with not existing parent directories in FTP Server
     * In such cases all not existing path elements are automatically created
+  * Support for `logback` `LOG` level configuration via ENV params
 
 ### Fixed
   * Missing implementation for `dispose()` in `InMemoryFsView`
