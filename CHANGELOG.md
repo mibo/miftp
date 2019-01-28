@@ -12,6 +12,9 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
   * Support for creation of absolute path with not existing parent directories in FTP Server
     * In such cases all not existing path elements are automatically created
 
+### Fixed
+  * Missing implementation for `dispose()` in `InMemoryFsView`
+
 ## [0.5.0] - 2019-01-24
 ### Added
   * Support for Directories in FTP Server

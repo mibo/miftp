@@ -184,6 +184,7 @@ public class InMemoryFsView implements FileSystemView {
 
   @Override
   public void dispose() {
-
+    LOG.debug("Dispose FSView");
+    workingDir = homeDir;
   }
 }

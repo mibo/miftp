@@ -8,11 +8,9 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.util.KeyManagerUtils;
 import org.apache.commons.net.util.TrustManagerUtils;
 import org.apache.ftpserver.ftplet.FtpException;
-import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.mina.filter.ssl.KeyStoreFactory;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -147,6 +145,33 @@ public class BasicServerTest {
     FTPFile[] files = client.listDirectories();
     assertEquals(0, files.length);
 
+    client.disconnect();
+  }
+
+  @Test
+  public void loginStartWithHomeDir() throws Exception {
+    FTPClient client = createFtpClient();
+    client.connect(hostname, serverPort);
+    client.login(user, password);
+    //
+    assertEquals("/", client.printWorkingDirectory());
+    FTPFile[] files = client.listDirectories();
+    assertEquals(0, files.length);
+    String testDirName = "testDir";
+    boolean mkResult = client.makeDirectory(testDirName);
+    assertTrue(mkResult);
+    files = client.listDirectories();
+    assertEquals(1, files.length);
+    assertTrue(client.changeWorkingDirectory(testDirName));
+    assertEquals("/" + testDirName, client.printWorkingDirectory());
+    //
+    client.logout();
+    client.disconnect();
+    //
+    client.connect(hostname, serverPort);
+    client.login(user, password);
+
+    assertEquals("/", client.printWorkingDirectory());
     client.disconnect();
   }
 
