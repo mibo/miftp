@@ -14,7 +14,7 @@ data class FileEndpoint(val name: String, val absolutePath: String, val lastModi
 
 //  val ftpFile: ftpFile
 
-  private val df = SimpleDateFormat("HH:mm, EEE, MMM d, ''yy")
+  private val df = SimpleDateFormat("HH:mm:ss, EEE, MMM d, ''yy")
   @JsonIgnore val lastModifiedFormatted = df.format(Date(lastModified))
 
   companion object Factory {

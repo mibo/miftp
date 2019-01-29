@@ -13,6 +13,10 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
     * In such cases all not existing path elements are automatically created
   * Support for `logback` `LOG` level configuration via ENV params
 
+### Changed
+  * Sort list of files by last modified date (desc) which is reflected in Index HTML Page
+  * Changed DateTime Format for last modified date formatted which is reflected in Index HTML Page
+
 ### Fixed
   * Missing implementation for `dispose()` in `InMemoryFsView`
 

@@ -23,7 +23,7 @@ class FileView {
   @GetMapping("/")
   fun index(model: Model): String {
     val user = ftpProvider.getUsername()
-    val files = handler.listFiles(user)
+    val files = handler.listFiles(user).sortedByDescending { it.lastModified }
     model.addAttribute("name", "sample")
     model.addAttribute("files", files)
     model.addAttribute("urlPrefix", pathPrefix)
