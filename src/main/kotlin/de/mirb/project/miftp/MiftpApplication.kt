@@ -13,8 +13,14 @@ class MiftpApplication {
   @Bean
   fun init(context: ApplicationContext) = CommandLineRunner {
 
-    val buildProperties = context.getBean(BuildProperties::class.java)
-    displayInfo(buildProperties)
+    try {
+      val buildProperties = context.getBean(BuildProperties::class.java)
+      displayInfo(buildProperties)
+    } catch (e: Exception) {
+      // just ignore?
+      // workaround for https://youtrack.jetbrains.com/issue/IDEA-201587
+      println("got exception <" + e.message + ">")
+    }
   }
 
   private fun displayInfo(buildProperties: BuildProperties) {
