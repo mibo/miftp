@@ -6,11 +6,13 @@ import org.springframework.boot.info.BuildProperties
 import org.springframework.boot.runApplication
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Profile
 
 @SpringBootApplication
 class MiftpApplication {
 
   @Bean
+  @Profile("!test")
   fun init(context: ApplicationContext) = CommandLineRunner {
 
     try {
