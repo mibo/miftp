@@ -23,6 +23,13 @@ class Router {
   fun route() = router {
     val user = ftpProvider.getUsername()
 
+    GET("/latestFile") {
+      val content = it.queryParam("content").isPresent
+      return@GET handler.latestFile(user)
+              .map { file -> if(content) fileContent(file) else fileData(file) }
+              .orElseGet { notFound().build() }
+//      ServerResponse.ok().body(fromObject(handler.latestFile(user)))
+    }
     GET("/files") { ServerResponse.ok().body(fromObject(handler.listFiles(user))) }
     GET("/files/{*id}") {
       val content = it.queryParam("content").isPresent

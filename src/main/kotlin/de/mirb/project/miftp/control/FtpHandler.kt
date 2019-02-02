@@ -53,6 +53,17 @@ class FtpHandler @Autowired constructor(private val server: MiFtpServer) {
     // FIXME: check if/how inefficient this is
     return view.orElse(null)
   }
+
+  /**
+   * Get last modified file.
+   */
+  fun latestFile(user: String): Optional<FileEndpoint> {
+    val view = server.getFileSystemView(user)
+    return Optional.ofNullable(getFlatFileListRecursive(view.homeDirectory)
+            .map { FileEndpoint.create(it) }
+            .sortedByDescending { it.lastModified }
+            .firstOrNull())
+  }
 //  fun list
 }
 

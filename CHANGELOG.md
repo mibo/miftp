@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 Planned changes/updates/fixes/features for to be part of one of the next _releases/versions_
 
+## [0.7.0-SNAPSHOT] - 2019-0x-xx
+### Added
+  * New endpoint `/latestFile?content` to get latest modified file
+
 ## [0.6.0] - 2019-01-29
 ### Added
   * Support for creation of absolute path with not existing parent directories in FTP Server
