@@ -14,7 +14,6 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
 
 ### Changed
   * Formats (Date, Size) in overview page (HTML)
-  * Updated certificate for local tests (`keystore.jks`)
 
 ## [0.6.0] - 2019-01-29
 ### Added
