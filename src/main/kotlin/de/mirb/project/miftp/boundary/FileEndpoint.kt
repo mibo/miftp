@@ -17,6 +17,8 @@ data class FileEndpoint(val name: String, val absolutePath: String, val lastModi
   private val df = SimpleDateFormat("HH:mm:ss, EEE, MMM d, ''yy")
   @JsonIgnore val lastModifiedFormatted = df.format(Date(lastModified))
 
+  val lastModifiedDate = Date(lastModified)
+
   companion object Factory {
     fun create(ftpFile: FtpFile) = FileEndpoint(ftpFile.name, ftpFile.absolutePath, ftpFile.lastModified, ftpFile.size, ftpFile)
   }
