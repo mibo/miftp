@@ -37,7 +37,8 @@
       </td>
       <!--<td th:text="${#dates.format(f.lastModifiedDate, 'HH:mm:ss, EEE, MMM d, ''yy')}">.</td>-->
       <td th:text="${#dates.format(f.lastModifiedDate, 'HH:mm:ss, EEE, MMM d, yy')}">.</td>
-      <td th:text="${#numbers.formatInteger(f.size,3,'POINT')}">Size</td>
+      <!--<td th:text="${#numbers.formatInteger(f.size,3,'POINT')}">Size</td>-->
+      <td th:text="${@sizeFormatter.format(f.size)}">Size</td>
       <td th:text="${f.absolutePath}">Path</td>
     </tr>
     </tbody>

@@ -10,6 +10,11 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
 ## [0.7.0-SNAPSHOT] - 2019-0x-xx
 ### Added
   * New endpoint `/latestFile?content` to get latest modified file
+  * Add new endpoint to overview page (HTML)
+
+### Changed
+  * Formats (Date, Size) in overview page (HTML)
+  * Updated certificate for local tests (`keystore.jks`)
 
 ## [0.6.0] - 2019-01-29
 ### Added
