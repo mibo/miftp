@@ -9,7 +9,7 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
 
 ## [0.7.0-SNAPSHOT] - 2019-0x-xx
 ### Added
-  * New endpoint `/latestFile?content` to get latest modified file
+  * New endpoint `/go/latestFile?content` to get latest modified file
   * Add new endpoint to overview page (HTML)
 
 ### Changed
