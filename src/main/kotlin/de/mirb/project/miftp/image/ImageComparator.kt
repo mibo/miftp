@@ -16,8 +16,12 @@ class ImageComparator {
 
   private fun percentageOfZeros(matrix: Array<IntArray>): Double {
     val all = matrix[0].size * matrix.size
-    var zeros = 0
-    matrix.forEach { it.forEach { if (it == 0) zeros++ } }
+//    var zeros = 0
+//    matrix.forEach { it.forEach { if (it == 0) zeros++ } }
+
+    val zeros = all - matrix.fold(0) { ones, outer ->
+      outer.fold(ones) { inOnes, value -> inOnes + value }
+    }
     return if (zeros == 0) 0.0 else (zeros / all).toDouble()
   }
 
@@ -28,7 +32,7 @@ class ImageComparator {
    * @param secondImage [BufferedImage] object of the second image.
    * @return populated binary matrix.
    */
-  fun populateTheMatrixOfTheDifferences(firstImage: BufferedImage, secondImage: BufferedImage): Array<IntArray> {
+  private fun populateTheMatrixOfTheDifferences(firstImage: BufferedImage, secondImage: BufferedImage): Array<IntArray> {
     val matrix = Array(firstImage.width) { IntArray(firstImage.height) }
     for (y in 0 until firstImage.height) {
       for (x in 0 until firstImage.width) {
@@ -46,7 +50,7 @@ class ImageComparator {
    * @param rgb2 the RGB value of the Pixel of the Image2.
    * @return `true` if they' are difference, `false` otherwise.
    */
-  fun isDifferent(rgb1: Int, rgb2: Int): Boolean {
+  private fun isDifferent(rgb1: Int, rgb2: Int): Boolean {
     val red1 = rgb1 shr 16 and 0xff
     val green1 = rgb1 shr 8 and 0xff
     val blue1 = rgb1 and 0xff
