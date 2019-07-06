@@ -64,6 +64,12 @@ class FtpHandler @Autowired constructor(private val server: MiFtpServer) {
             .sortedByDescending { it.lastModified }
             .firstOrNull())
   }
+
+  /**
+   * Get current count of files (excluded directories)
+   */
+  fun getFilesCount(user: String) = listFiles(user).size
+
 //  fun list
 }
 

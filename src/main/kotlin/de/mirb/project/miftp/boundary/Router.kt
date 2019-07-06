@@ -23,6 +23,11 @@ class Router {
   fun route() = router {
     val user = ftpProvider.getUsername()
 
+    //
+    GET("/health") {
+      return@GET ok().body(fromObject(HealthState("OK", handler.getFilesCount(user))))
+    }
+    // latest file
     GET("/go/latestFile") {
       val content = it.queryParam("content").isPresent
       return@GET handler.latestFile(user)
@@ -30,7 +35,9 @@ class Router {
               .orElseGet { notFound().build() }
 //      ServerResponse.ok().body(fromObject(handler.latestFile(user)))
     }
-    GET("/files") { ServerResponse.ok().body(fromObject(handler.listFiles(user))) }
+    // all files
+    GET("/files") { ok().body(fromObject(handler.listFiles(user))) }
+    // files by id
     GET("/files/{*id}") {
       val content = it.queryParam("content").isPresent
       val id = it.pathVariable("id")
@@ -39,6 +46,7 @@ class Router {
       return@GET fileById.map { file -> if(content) fileContent(file) else fileData(file) }
               .orElseGet { notFound().build() }
     }
+    // file content by file id
     GET("/files/{id}/content") {
       val id = it.pathVariable("id")
       val fileById = fileView(user, id)
@@ -55,4 +63,6 @@ class Router {
   private fun fileView(user: String, path: String): Optional<FileEndpoint> {
     return handler.getFileByPath(user, path)
   }
+
+  data class HealthState(val state: String, val filesCount: Int)
 }
