@@ -10,10 +10,12 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
 ## [0.7.0-SNAPSHOT] - 2019-0x-xx
 ### Added
   * New endpoint `/go/latestFile?content` to get latest modified file
+  * New endpoint `/health` to get (basic) health information
   * Add new endpoint to overview page (HTML)
 
 ### Changed
   * Formats (Date, Size) in overview page (HTML)
+  * Updated to Spring Boot version `2.1.6`
 
 ## [0.6.0] - 2019-01-29
 ### Added
