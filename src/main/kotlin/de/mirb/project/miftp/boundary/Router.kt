@@ -23,7 +23,7 @@ class Router {
   fun route() = router {
     val user = ftpProvider.getUsername()
 
-    //
+    // basic health state
     GET("/health") {
       return@GET ok().body(fromObject(HealthState("OK", handler.getFilesCount(user))))
     }

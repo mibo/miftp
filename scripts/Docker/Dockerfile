@@ -15,5 +15,7 @@ EXPOSE ${FTP_PASV_PORTS}
 ENV SERVER_PORT=${HTTP_PORT}
 ENV MIFTP_FTP_PORT=${FTP_PORT}
 ENV MIFTP_FTP_PASVPORTS=${FTP_PASV_PORTS}
+#ENV JAVA_OPTS="-XX:PermSize=1024m -XX:MaxPermSize=512m -Xmx300m"
+ENV JAVA_OPTS="-Xmx300m"
 
 ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
