@@ -8,7 +8,6 @@ import org.springframework.boot.runApplication
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
-import java.text.DecimalFormat
 
 @SpringBootApplication
 class MiftpApplication {

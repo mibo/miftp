@@ -1,12 +1,15 @@
 package de.mirb.project.miftp.fs;
 
 import de.mirb.project.miftp.FileSystemConfig;
+import de.mirb.project.miftp.fs.listener.FileSystemListener;
 
 public class InMemoryFileSystemConfig implements FileSystemConfig {
   private long ttlInMilliseconds = 0;
   private long maxMemoryInBytes = 0;
   private long maxFiles = 0;
   private int cleanupInterval = 0;
+  /** default is an empty implementation */
+  private FileSystemListener fileSystemListener = event -> {  };
 
   public static class Builder {
     InMemoryFileSystemConfig config = new InMemoryFileSystemConfig();
@@ -25,6 +28,10 @@ public class InMemoryFileSystemConfig implements FileSystemConfig {
     }
     public Builder cleanUpInterval(int cleanupInterval) {
       config.cleanupInterval = cleanupInterval;
+      return this;
+    }
+    public Builder fileSystemListener(FileSystemListener listener) {
+      config.fileSystemListener = listener;
       return this;
     }
 
@@ -52,6 +59,10 @@ public class InMemoryFileSystemConfig implements FileSystemConfig {
 
   public int getCleanupInterval() {
     return cleanupInterval;
+  }
+
+  public FileSystemListener getFileSystemListener() {
+    return fileSystemListener;
   }
 
   @Override
