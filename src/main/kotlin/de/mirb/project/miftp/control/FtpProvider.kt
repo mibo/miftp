@@ -2,10 +2,13 @@ package de.mirb.project.miftp.control
 
 import de.mirb.project.miftp.FtpServerConfig
 import de.mirb.project.miftp.MiFtpServer
+import de.mirb.project.miftp.control.notifier.SlackNotifier
 import de.mirb.project.miftp.fs.InMemoryFileSystemConfig
+import de.mirb.project.miftp.fs.listener.FileSystemListener
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.lang.IllegalStateException
 
 @Configuration
 class FtpProvider {
@@ -34,6 +37,17 @@ class FtpProvider {
   var keystoreName: String? = ""
   @Value("\${miftp.keystore.password:}")
   var keystorePassword: String? = ""
+  @Value("\${miftp.eventListener:}")
+  var eventListener: String? = ""
+  @Value("\${miftp.eventListener.failOnMissing:}")
+  var failOnMissingEventListener: Boolean = false
+  @Value("#{\${miftp.eventListener.parameters}}")
+  var eventListenerParameters: Map<String, String> = HashMap()
+
+//  var test: RestClientAutoConfiguration
+  var fileCreatedNotifier = FileSystemListener {
+    println("${it.user.name} has ${it.type.name} the path ${it.file.absolutePath} at ${it.timestamp}")
+  }
 
   @Bean
   fun server(): MiFtpServer {
@@ -48,6 +62,7 @@ class FtpProvider {
             .maxMemoryInBytes(maxMemoryInBytes)
             .ttlInMilliseconds(ttlInMilliseconds)
             .cleanUpInterval(cleanupInterval)
+            .fileSystemListener(getFtpEventListener())
             .create()
 
     val keystoreFile =
@@ -70,4 +85,23 @@ class FtpProvider {
   }
 
   fun getUsername() = username!!
+
+  private fun getFtpEventListener(): FileSystemListener {
+    return when (eventListener) {
+      "" -> FileSystemListener { }
+      "SlackNotifier" -> SlackNotifier().init(eventListenerParameters)
+      else -> handleMissingEventListener()
+    }
+  }
+
+  private fun handleMissingEventListener(): FileSystemListener {
+    if(failOnMissingEventListener) {
+      throw IllegalStateException("ERROR: Configured event listener $eventListener is not available.")
+    }
+    return FileSystemListener {
+      println("WARNING: Configured event listener $eventListener is not available. (Received an event at ${it.timestamp})")
+    }
+
+  }
+//    eventListener
 }

@@ -55,22 +55,26 @@ public class InMemoryFsView implements FileSystemView {
   }
 
   void updatePath(InMemoryFtpPath path) {
-    if(config.getFileSystemListener() != null) {
-      BasicFileSystemEvent event = with(FileSystemEvent.EventType.CREATED)
-          .file(path).user(user).build();
-      config.getFileSystemListener().fileSystemChanged(event);
-    }
+    updateListener(path, FileSystemEvent.EventType.CREATED);
     LOG.debug("Updated path '{}'", path);
     name2Path.put(path.getAbsolutePath(), path);
 //    LOG.debug("Paths after update: " + name2Path.toString());
   }
 
-  void removePath(InMemoryFtpPath path) {
-    if(config.getFileSystemListener() != null) {
-      BasicFileSystemEvent event = with(FileSystemEvent.EventType.DELETED)
-          .file(path).user(user).build();
-      config.getFileSystemListener().fileSystemChanged(event);
+  private void updateListener(InMemoryFtpPath path, FileSystemEvent.EventType created) {
+    if (config.getFileSystemListener() != null) {
+      try {
+        BasicFileSystemEvent event = with(created).file(path).user(user).build();
+        config.getFileSystemListener().fileSystemChanged(event);
+      } catch (Exception e) {
+        // catch all exceptions to prevent failing FTP tasks because of errors in FileSystemListener
+        LOG.warn("Exception occurred in handling of file system changed event: " + e.getMessage(), e);
+      }
     }
+  }
+
+  void removePath(InMemoryFtpPath path) {
+    updateListener(path, FileSystemEvent.EventType.DELETED);
     LOG.debug("Removed path '{}'", path);
     name2Path.remove(path.getAbsolutePath());
 //    LOG.debug("Paths after removal: " + name2Path.toString());
