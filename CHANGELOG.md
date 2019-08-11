@@ -12,6 +12,8 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
   * New endpoint `/go/latestFile?content` to get latest modified file
   * New endpoint `/health` to get (basic) health information
   * Add new endpoint to overview page (HTML)
+  * Added notification (callback) option via `FileSystemListener`
+  * Added notifier extension to main app and first `SlackNotifier` implementation
 
 ### Changed
   * Formats (Date, Size) in overview page (HTML)

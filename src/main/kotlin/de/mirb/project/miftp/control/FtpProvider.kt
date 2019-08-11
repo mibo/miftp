@@ -8,7 +8,6 @@ import de.mirb.project.miftp.fs.listener.FileSystemListener
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.lang.IllegalStateException
 
 @Configuration
 class FtpProvider {
