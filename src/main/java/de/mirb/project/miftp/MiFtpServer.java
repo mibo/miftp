@@ -51,6 +51,9 @@ public class MiFtpServer {
     }
   }
 
+  /**
+   * Stop the server if it was started
+   */
   public void stop() {
     if(server != null && !server.isStopped()) {
       server.stop();
@@ -61,7 +64,7 @@ public class MiFtpServer {
    * Start server with SSL (ftps://) if configured (<code>keystoreName</code> is not <code>NULL</code>).
    * Otherwise server is started without SSL (ftp://).
    *
-   * @throws FtpException
+   * @throws FtpException if starts fails for some reason
    */
   public void start() throws FtpException {
     if(config.getKeystoreName() == null) {

@@ -1,5 +1,7 @@
 package de.mirb.project.miftp.fs;
 
+import de.mirb.project.miftp.fs.listener.BasicFileSystemEvent;
+import de.mirb.project.miftp.fs.listener.FileSystemEvent;
 import org.apache.ftpserver.ftplet.FileSystemView;
 import org.apache.ftpserver.ftplet.FtpException;
 import org.apache.ftpserver.ftplet.FtpFile;
@@ -12,6 +14,8 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import static de.mirb.project.miftp.fs.listener.BasicFileSystemEvent.with;
 
 /**
  * Created by mibo on 21.04.17.
@@ -51,13 +55,27 @@ public class InMemoryFsView implements FileSystemView {
   }
 
   void updatePath(InMemoryFtpPath path) {
+    updateListener(path, FileSystemEvent.EventType.CREATED);
     LOG.debug("Updated path '{}'", path);
     name2Path.put(path.getAbsolutePath(), path);
 //    LOG.debug("Paths after update: " + name2Path.toString());
   }
 
+  private void updateListener(InMemoryFtpPath path, FileSystemEvent.EventType created) {
+    if (config.getFileSystemListener() != null) {
+      try {
+        BasicFileSystemEvent event = with(created).file(path).user(user).build();
+        config.getFileSystemListener().fileSystemChanged(event);
+      } catch (Exception e) {
+        // catch all exceptions to prevent failing FTP tasks because of errors in FileSystemListener
+        LOG.warn("Exception occurred in handling of file system changed event: " + e.getMessage(), e);
+      }
+    }
+  }
+
   void removePath(InMemoryFtpPath path) {
-    LOG.debug("Remove path '{}'", path);
+    updateListener(path, FileSystemEvent.EventType.DELETED);
+    LOG.debug("Removed path '{}'", path);
     name2Path.remove(path.getAbsolutePath());
 //    LOG.debug("Paths after removal: " + name2Path.toString());
   }

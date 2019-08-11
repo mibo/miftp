@@ -1,7 +1,11 @@
 package de.mirb.project;
 
+import de.mirb.project.miftp.FileSystemConfig;
 import de.mirb.project.miftp.FtpServerConfig;
 import de.mirb.project.miftp.MiFtpServer;
+import de.mirb.project.miftp.fs.InMemoryFileSystemConfig;
+import de.mirb.project.miftp.fs.listener.FileSystemEvent;
+import de.mirb.project.miftp.fs.listener.FileSystemListener;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPSClient;
@@ -26,9 +30,14 @@ import java.net.ServerSocket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static de.mirb.project.miftp.fs.listener.FileSystemEvent.EventType.CREATED;
 import static org.junit.Assert.*;
 
 /**
@@ -43,6 +52,8 @@ public class BasicServerTest {
   private int serverPort;
   private String user;
   private String password;
+
+  private Map<String, List<FileSystemEvent>> user2event = new ConcurrentHashMap<>();
 
   private FTPClient client;
 
@@ -71,8 +82,19 @@ public class BasicServerTest {
     server.start();
   }
 
+  private final FileSystemListener listener = event -> {
+    user2event.compute(event.getUser().getName(), (key, value) -> {
+      if(value == null) {
+        value = new ArrayList<>();
+      }
+      value.add(event);
+      return value;
+    });
+  };
+
   private MiFtpServer createServer(boolean ssl, boolean anonymous) throws FtpException {
-    FtpServerConfig.Builder configBuilder = FtpServerConfig.with(serverPort);
+    FileSystemConfig fsConfig = InMemoryFileSystemConfig.with().fileSystemListener(listener).create();
+    FtpServerConfig.Builder configBuilder = FtpServerConfig.with(serverPort).fileSystemConfig(fsConfig);
     if(!anonymous) {
       configBuilder.username(user).password(password);
     }
@@ -203,6 +225,12 @@ public class BasicServerTest {
     assertTrue(client.changeWorkingDirectory("/" + testDirName + "/"));
     files = client.listDirectories();
     assertEquals(1, files.length);
+
+    List<FileSystemEvent> fileSystemEvents = user2event.get(user);
+    assertEquals(2, fileSystemEvents.size());
+    assertEquals(CREATED, fileSystemEvents.get(0).getType());
+    assertTrue(fileSystemEvents.stream().allMatch(f -> f.getType() == CREATED));
+    assertTrue(fileSystemEvents.stream().anyMatch(f -> "/testDir/testSubDir".equals(f.getFile().getAbsolutePath())));
   }
 
   @Test
