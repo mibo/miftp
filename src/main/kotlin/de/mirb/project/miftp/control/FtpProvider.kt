@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class FtpProvider {
 
+  @Value("\${server.port}")
+  private var serverPort: String = ""
   @Value("\${miftp.ftp.user}")
   private var username: String? = null
   @Value("\${miftp.ftp.password}")
@@ -88,7 +90,7 @@ class FtpProvider {
   private fun getFtpEventListener(): FileSystemListener {
     return when (eventListener) {
       "" -> FileSystemListener { }
-      "SlackNotifier" -> SlackNotifier().init(eventListenerParameters)
+      "SlackNotifier" -> SlackNotifier().init(eventListenerParameters.plus("server.port" to serverPort))
       else -> handleMissingEventListener()
     }
   }
