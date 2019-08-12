@@ -100,7 +100,5 @@ class FtpProvider {
     return FileSystemListener {
       println("WARNING: Configured event listener $eventListener is not available. (Received an event at ${it.timestamp})")
     }
-
   }
-//    eventListener
 }
