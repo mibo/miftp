@@ -70,7 +70,7 @@ class SlackNotifier : FtpEventListener {
             "author_name": "MiFtp server: ${event.user.name}",
             "author_link": "$baseUrl",
             "title": "${event.type.name}: ${event.file.name}",
-            "title_link": "$baseUrl/files/${event.file.name}/content",
+            "title_link": "$baseUrl/files/${event.file.absolutePath}?content",
             "text": "$message",
             "footer": "MiFtp",
             "ts": ${event.timestamp.atZone(ZoneId.systemDefault()).toEpochSecond()}
