@@ -4,8 +4,6 @@ import de.mirb.project.miftp.fs.listener.FileSystemEvent
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
 import kotlinx.coroutines.runBlocking
-import java.lang.IllegalArgumentException
-import java.net.InetAddress
 import java.time.ZoneId
 
 class SlackNotifier : FtpEventListener {
@@ -29,9 +27,7 @@ class SlackNotifier : FtpEventListener {
     parameters.getOrElse(key, { throw IllegalArgumentException("SlackNotifier must have a $key set") })
 
   private fun createServerBaseUrl(parameters: Map<String, String>): String {
-    return parameters.getOrElse(PARA_MIFTP_SERVER_BASE_URL, {
-      return InetAddress.getLocalHost().hostName + parameters.get("server.port")
-    })
+    return parameters.getOrDefault(PARA_MIFTP_SERVER_BASE_URL, "...")
   }
 
   private fun createFilterSet(parameters: Map<String, String>): Set<FileSystemEvent.EventType> {

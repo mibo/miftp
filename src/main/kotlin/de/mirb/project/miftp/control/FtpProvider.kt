@@ -12,8 +12,6 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class FtpProvider {
 
-  @Value("\${server.port}")
-  private var serverPort: String = ""
   @Value("\${miftp.ftp.user}")
   private var username: String? = null
   @Value("\${miftp.ftp.password}")
@@ -90,7 +88,7 @@ class FtpProvider {
   private fun getFtpEventListener(): FileSystemListener {
     return when (eventListener) {
       "" -> FileSystemListener { }
-      "SlackNotifier" -> SlackNotifier().init(eventListenerParameters.plus("server.port" to serverPort))
+      "SlackNotifier" -> SlackNotifier().init(eventListenerParameters)
       else -> handleMissingEventListener()
     }
   }
@@ -102,7 +100,5 @@ class FtpProvider {
     return FileSystemListener {
       println("WARNING: Configured event listener $eventListener is not available. (Received an event at ${it.timestamp})")
     }
-
   }
-//    eventListener
 }
