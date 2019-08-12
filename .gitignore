@@ -1,4 +1,10 @@
 # Created by .ignore support plugin (hsz.mobi)
+### Mibo parts
+# Local only test classes
+**/test/**/Local*Test*
+# Local only properties
+**/resources/*local*
+
 ### Kotlin template
 # Compiled class file
 *.class
