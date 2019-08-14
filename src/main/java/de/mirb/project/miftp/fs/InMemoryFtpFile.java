@@ -73,10 +73,10 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
 
 
   public boolean isFlushed() {
-    if(bout == null || bout.isClosed()) {
-      return true;
-    }
-    return false;
+    if(bout == null) {
+      return false;
+    } 
+    return bout.isClosed();
   }
 
 }
