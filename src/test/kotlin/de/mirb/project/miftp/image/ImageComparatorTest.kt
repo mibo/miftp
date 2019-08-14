@@ -1,6 +1,7 @@
 package de.mirb.project.miftp.image
 
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Test
 import java.awt.Image
 import java.awt.image.BufferedImage
@@ -10,6 +11,20 @@ import java.util.*
 class ImageComparatorTest {
 
   @Test
+  @Ignore("Need different images")
+  fun realImages() {
+    val compare = ImageComparator()
+    val firstImage = loadImageResource("images/_real_one.jpg")
+    val secondImage = loadImageResource("images/_real_two.jpg")
+
+    val result = compare.compare(firstImage, secondImage)
+
+    println("Diff result: $result")
+    Assert.assertEquals(0.9995030381944444, result, 0.0)
+    Assert.assertNotNull(result)
+  }
+
+  @Test
   fun differentImages() {
     val compare = ImageComparator()
     val firstImage = loadImageResource("images/image_one.jpg")
@@ -17,7 +32,7 @@ class ImageComparatorTest {
 
     val result = compare.compare(firstImage, secondImage)
 
-    Assert.assertEquals(0.0, result, 0.0)
+    Assert.assertEquals(0.18074544270833334, result, 0.0)
     Assert.assertNotNull(result)
   }
 
@@ -29,7 +44,7 @@ class ImageComparatorTest {
 
     val result = compare.compare(firstImage, secondImage)
 
-    Assert.assertEquals(0.0, result, 0.0)
+    Assert.assertEquals(0.2001953125, result, 0.0)
     Assert.assertNotNull(result)
   }
 
@@ -42,7 +57,7 @@ class ImageComparatorTest {
 
     val result = compare.compare(firstImage, secondImage)
 
-    Assert.assertEquals(0.0, result, 0.0)
+    Assert.assertEquals(0.9877994791666667, result, 0.0)
     Assert.assertNotNull(result)
   }
 

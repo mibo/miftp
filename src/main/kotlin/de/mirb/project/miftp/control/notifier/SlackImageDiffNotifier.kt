@@ -45,16 +45,13 @@ class SlackImageDiffNotifier : FtpEventListener {
   override fun fileSystemChanged(event: FileSystemEvent) {
     if(event.type == FileSystemEvent.EventType.CREATED) {
       if(isImage(event.file)) {
-        if(lastImage == null) {
-          lastImage = event.file
-        } else {
-          val diffResult = compareFiles(lastImage!!, event.file)
-          if(diffResult.isDifferent()) {
-            val jsonContent = createJsonPostContent(serverBaseUrl, event, diffResult)
+        if(lastImage != null) {
+          compareFiles(lastImage!!, event.file).ifDifferent {
+            val jsonContent = createJsonPostContent(serverBaseUrl, event, it)
             slackPost(jsonContent)
           }
-          lastImage = event.file
         }
+        lastImage = event.file
       }
     }
   }
