@@ -1,0 +1,114 @@
+package de.mirb.project.miftp.control.notifier
+
+import de.mirb.project.miftp.fs.listener.FileSystemEvent
+import de.mirb.project.miftp.image.ImageComparator
+import io.ktor.client.HttpClient
+import io.ktor.client.request.post
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.time.withTimeout
+import kotlinx.coroutines.withTimeout
+import org.apache.ftpserver.ftplet.FtpFile
+import java.time.ZoneId
+
+class SlackImageDiffNotifier : FtpEventListener {
+
+  val PARA_WEBHOOK_URL = "slack_webhook_url"
+  val PARA_MIFTP_SERVER_BASE_URL = "miftp_server_base_url"
+  val PARA_DIFF_THRESHOLD = "diff_threshold"
+
+  lateinit var url: String
+  lateinit var filter: Set<FileSystemEvent.EventType>
+  lateinit var serverBaseUrl: String
+  var diffThreshold = 0.6
+  var lastImage: FtpFile? = null
+
+  override fun init(parameters: Map<String, String>): FtpEventListener {
+    url = getOrThrow(parameters, PARA_WEBHOOK_URL)
+    serverBaseUrl = createServerBaseUrl(parameters)
+    diffThreshold = readDiffThreshold(parameters)
+    return this
+  }
+
+  private fun readDiffThreshold(parameters: Map<String, String>): Double {
+    val diff = parameters.getOrDefault(PARA_DIFF_THRESHOLD, "0.6").toDoubleOrNull()
+    if(diff == null) {
+      return 0.6
+    }
+    return diff
+  }
+
+  private fun getOrThrow(parameters: Map<String, String>, key: String) =
+    parameters.getOrElse(key, { throw IllegalArgumentException("SlackNotifier must have a $key set") })
+
+  private fun createServerBaseUrl(parameters: Map<String, String>): String {
+    return parameters.getOrDefault(PARA_MIFTP_SERVER_BASE_URL, "...")
+  }
+
+  override fun fileSystemChanged(event: FileSystemEvent) {
+    if(event.type == FileSystemEvent.EventType.CREATED) {
+      if(isImage(event.file)) {
+        if(lastImage == null) {
+          lastImage = event.file
+        } else {
+          val different = compareFiles(lastImage!!, event.file)
+          if(different) {
+            val jsonContent = createJsonPostContent(event, serverBaseUrl)
+            slackPost(jsonContent)
+          }
+          lastImage = event.file
+        }
+      }
+    }
+  }
+
+  private fun isImage(file: FtpFile): Boolean {
+    if(file.isDirectory) {
+      return false
+    }
+    return file.name.endsWith("png", true)
+            || file.name.endsWith("jpg", true)
+            || file.name.endsWith("jpeg", true)
+  }
+
+  private val imageComparator = ImageComparator()
+
+  private fun compareFiles(first: FtpFile, second: FtpFile): Boolean {
+    val diff = imageComparator.compare(first.createInputStream(0), second.createInputStream(0))
+    println("File compare (first=${first.name} to second=${second.name}): $diff (${diff > diffThreshold})")
+    if(diff < diffThreshold) {
+      return true
+    }
+    return false
+  }
+
+  private fun slackPost(message: String) {
+    val client = HttpClient()
+    runBlocking {
+      val htmlContent = client.post<String>(url) {
+        body = message
+      }
+      println("Result $htmlContent")
+    }
+  }
+
+  private fun createJsonPostContent(event: FileSystemEvent, baseUrl: String) : String {
+    val message = "${event.user.name} has ${event.type.name} the path ${event.file.absolutePath} at ${event.timestamp}"
+    return """
+    {
+    "attachments": [
+        {
+            "fallback": "$message",
+            "color": "#36a64f",
+            "author_name": "MiFtp server: ${event.user.name}",
+            "author_link": "$baseUrl",
+            "title": "${event.type.name}: ${event.file.name}",
+            "title_link": "$baseUrl/files/${event.file.absolutePath}?content",
+            "text": "$message",
+            "footer": "MiFtp",
+            "ts": ${event.timestamp.atZone(ZoneId.systemDefault()).toEpochSecond()}
+        }
+      ]
+    }
+    """.trimIndent()
+  }
+}
