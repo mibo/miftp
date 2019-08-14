@@ -8,9 +8,6 @@ import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 /**
  * Created by mibo on 21.04.17.
  */
@@ -60,7 +57,7 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
 
   private byte[] getContent() {
     synchronized (name) {
-      waitForCondition(100, MILLISECONDS, 3, this::isUploadOngoing);
+//      waitForCondition(100, MILLISECONDS, 3, this::isUploadOngoing);
       if(isFlushed()) {
         if(content == null) {
           content = bout.toByteArray();

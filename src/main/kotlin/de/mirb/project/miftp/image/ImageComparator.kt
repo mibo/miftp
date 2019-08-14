@@ -1,9 +1,9 @@
 package de.mirb.project.miftp.image
 
+import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.InputStream
 import javax.imageio.ImageIO
-import java.awt.Image
 import kotlin.math.pow
 import kotlin.math.sqrt
 
