@@ -29,7 +29,7 @@ data class FileEndpoint(val name: String, val absolutePath: String, val lastModi
     if(ftpFile.isFile) {
       val ins = ftpFile.createInputStream(0)
       //val ba = ByteArray()
-      return ByteBuffer.wrap(ins.buffered().use { it.readAllBytes() })
+      return ByteBuffer.wrap(ins.buffered().use { it.readBytes() })
     }
     // TODO: check if return empty content is better
     throw IllegalArgumentException("Unable to get content from directory")
