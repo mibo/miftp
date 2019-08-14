@@ -3,6 +3,9 @@ package de.mirb.project.miftp.image
 import java.awt.image.BufferedImage
 import java.io.InputStream
 import javax.imageio.ImageIO
+import java.awt.Image
+
+
 
 class ImageComparator {
   fun compare(firstImage: InputStream, secondImage: InputStream): Double {
@@ -33,13 +36,36 @@ class ImageComparator {
    * @return populated binary matrix.
    */
   private fun populateTheMatrixOfTheDifferences(firstImage: BufferedImage, secondImage: BufferedImage): Array<IntArray> {
-    val matrix = Array(firstImage.width) { IntArray(firstImage.height) }
-    for (y in 0 until firstImage.height) {
-      for (x in 0 until firstImage.width) {
-        matrix[x][y] = if (isDifferent(firstImage.getRGB(x, y), secondImage.getRGB(x, y))) 1 else 0
+    val heightDiff = firstImage.height != secondImage.height
+    val widthDiff = firstImage.width != secondImage.width
+
+    var firstImageCompare = firstImage
+    var secondImageCompare = secondImage
+    if(heightDiff || widthDiff) {
+      // TODO: ...
+      if(firstImage.height > secondImage.height) {
+        secondImageCompare = resize(secondImage, firstImage.height, firstImage.width)
+      } else {
+        firstImageCompare = resize(firstImage, secondImage.height, secondImage.width)
+      }
+    }
+
+    val matrix = Array(firstImageCompare.width) { IntArray(firstImageCompare.height) }
+    for (y in 0 until firstImageCompare.height) {
+      for (x in 0 until firstImageCompare.width) {
+        matrix[x][y] = if (isDifferent(firstImageCompare.getRGB(x, y), secondImageCompare.getRGB(x, y))) 1 else 0
       }
     }
     return matrix
+  }
+
+  private fun resize(img: BufferedImage, height: Int, width: Int): BufferedImage {
+    val tmp = img.getScaledInstance(width, height, Image.SCALE_SMOOTH)
+    val resized = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+    val g2d = resized.createGraphics()
+    g2d.drawImage(tmp, 0, 0, null)
+    g2d.dispose()
+    return resized
   }
 
   /**

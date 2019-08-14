@@ -5,8 +5,6 @@ import de.mirb.project.miftp.image.ImageComparator
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.time.withTimeout
-import kotlinx.coroutines.withTimeout
 import org.apache.ftpserver.ftplet.FtpFile
 import java.time.ZoneId
 
@@ -50,9 +48,9 @@ class SlackImageDiffNotifier : FtpEventListener {
         if(lastImage == null) {
           lastImage = event.file
         } else {
-          val different = compareFiles(lastImage!!, event.file)
-          if(different) {
-            val jsonContent = createJsonPostContent(event, serverBaseUrl)
+          val diffResult = compareFiles(lastImage!!, event.file)
+          if(diffResult.isDifferent()) {
+            val jsonContent = createJsonPostContent(serverBaseUrl, event, diffResult)
             slackPost(jsonContent)
           }
           lastImage = event.file
@@ -72,13 +70,10 @@ class SlackImageDiffNotifier : FtpEventListener {
 
   private val imageComparator = ImageComparator()
 
-  private fun compareFiles(first: FtpFile, second: FtpFile): Boolean {
+  private fun compareFiles(first: FtpFile, second: FtpFile): DiffResult {
     val diff = imageComparator.compare(first.createInputStream(0), second.createInputStream(0))
     println("File compare (first=${first.name} to second=${second.name}): $diff (${diff > diffThreshold})")
-    if(diff < diffThreshold) {
-      return true
-    }
-    return false
+    return DiffResult(first, second, diff, diffThreshold)
   }
 
   private fun slackPost(message: String) {
@@ -91,8 +86,9 @@ class SlackImageDiffNotifier : FtpEventListener {
     }
   }
 
-  private fun createJsonPostContent(event: FileSystemEvent, baseUrl: String) : String {
-    val message = "${event.user.name} has ${event.type.name} the path ${event.file.absolutePath} at ${event.timestamp}"
+  private fun createJsonPostContent(baseUrl: String, event: FileSystemEvent, diff: DiffResult) : String {
+    val message = "File compare (first=${diff.first.name} to second=${diff.second.name}): ${diff.diffValue} (${diff.isDifferent()})"
+
     return """
     {
     "attachments": [
@@ -110,5 +106,18 @@ class SlackImageDiffNotifier : FtpEventListener {
       ]
     }
     """.trimIndent()
+  }
+
+
+  data class DiffResult(val first: FtpFile, val second: FtpFile,
+                        val diffValue: Double, val diffThreshold: Double) {
+
+    fun isDifferent() = diffValue < diffThreshold
+
+    fun ifDifferent(run: (r: DiffResult) -> Unit) {
+      if(isDifferent()) {
+        run(this)
+      }
+    }
   }
 }
