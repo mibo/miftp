@@ -6,33 +6,46 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.post
 import kotlinx.coroutines.runBlocking
 import org.apache.ftpserver.ftplet.FtpFile
+import org.slf4j.LoggerFactory.getLogger
 import java.time.ZoneId
 
 class SlackImageDiffNotifier : FtpEventListener {
 
+  companion object {
+    private val LOG = getLogger(SlackImageDiffNotifier::class.java)
+  }
+
   val PARA_WEBHOOK_URL = "slack_webhook_url"
   val PARA_MIFTP_SERVER_BASE_URL = "miftp_server_base_url"
+  /** all images which are less _equal_ (more _different_) then the threshold are posted */
   val PARA_DIFF_THRESHOLD = "diff_threshold"
+  val PARA_DIFF_THRESHOLD_DEFAULT = "0.5"
+  /** all images which are less _equal_ (more _different_) then the ignore threshold are ignored */
+  val PARA_DIFF_IGNORE_THRESHOLD = "diff_ignore_threshold"
+  val PARA_DIFF_IGNORE_THRESHOLD_DEFAULT = "0.0"
 
   lateinit var url: String
-  lateinit var filter: Set<FileSystemEvent.EventType>
   lateinit var serverBaseUrl: String
-  var diffThreshold = 0.6
+  var diffThreshold = PARA_DIFF_THRESHOLD_DEFAULT.toDouble()
+  var diffIgnore = PARA_DIFF_IGNORE_THRESHOLD_DEFAULT.toDouble()
   var lastImage: FtpFile? = null
 
   override fun init(parameters: Map<String, String>): FtpEventListener {
     url = getOrThrow(parameters, PARA_WEBHOOK_URL)
     serverBaseUrl = createServerBaseUrl(parameters)
     diffThreshold = readDiffThreshold(parameters)
+    diffIgnore = readDiffThreshold(parameters)
     return this
   }
 
   private fun readDiffThreshold(parameters: Map<String, String>): Double {
-    val diff = parameters.getOrDefault(PARA_DIFF_THRESHOLD, "0.6").toDoubleOrNull()
-    if(diff == null) {
-      return 0.6
-    }
-    return diff
+    val diff = parameters.getOrDefault(PARA_DIFF_THRESHOLD, PARA_DIFF_THRESHOLD_DEFAULT).toDoubleOrNull()
+    return diff ?: PARA_DIFF_THRESHOLD_DEFAULT.toDouble()
+  }
+
+  private fun readDiffIgnoreThreshold(parameters: Map<String, String>): Double {
+    val diff = parameters.getOrDefault(PARA_DIFF_IGNORE_THRESHOLD, PARA_DIFF_IGNORE_THRESHOLD_DEFAULT).toDoubleOrNull()
+    return diff ?: PARA_DIFF_IGNORE_THRESHOLD_DEFAULT.toDouble()
   }
 
   private fun getOrThrow(parameters: Map<String, String>, key: String) =
@@ -46,7 +59,7 @@ class SlackImageDiffNotifier : FtpEventListener {
     if(event.type == FileSystemEvent.EventType.CREATED) {
       if(isImage(event.file)) {
         if(lastImage != null) {
-          compareFiles(lastImage!!, event.file).ifDifferent {
+          compareFiles(lastImage!!, event.file).ifDifferentAndNotIgnored {
             val jsonContent = createJsonPostContent(serverBaseUrl, event, it)
             slackPost(jsonContent)
           }
@@ -69,8 +82,8 @@ class SlackImageDiffNotifier : FtpEventListener {
 
   private fun compareFiles(first: FtpFile, second: FtpFile): DiffResult {
     val diff = imageComparator.compare(first.createInputStream(0), second.createInputStream(0))
-    println("File compare (first=${first.name} to second=${second.name}): $diff (${diff > diffThreshold})")
-    return DiffResult(first, second, diff, diffThreshold)
+    LOG.info("File compare (first=${first.name} to second=${second.name}): $diff (${diff < diffThreshold})")
+    return DiffResult(first, second, diff, diffIgnore, diffThreshold)
   }
 
   private fun slackPost(message: String) {
@@ -79,12 +92,12 @@ class SlackImageDiffNotifier : FtpEventListener {
       val htmlContent = client.post<String>(url) {
         body = message
       }
-      println("Result $htmlContent")
+      LOG.info("Result $htmlContent")
     }
   }
 
   private fun createJsonPostContent(baseUrl: String, event: FileSystemEvent, diff: DiffResult) : String {
-    val message = "Image compare (first=${diff.first.name} to second=${diff.second.name}): ${diff.diffValue} (${diff.isDifferent()})"
+    val message = "(first=${diff.first.name} to second=${diff.second.name}): ${diff.diffValue} (${diff.isDifferent()})"
 
     return """
     {
@@ -93,7 +106,7 @@ class SlackImageDiffNotifier : FtpEventListener {
             "author_name": "MiFtp server: ${event.user.name}",
             "author_link": "$baseUrl",
             "pretext": "Different image created...",
-            "fallback": "There is a difference between images.",
+            "fallback": "There is a difference between images ($message).",
             "title": "New image: ${diff.first.name}",
             "title_link": "$baseUrl/files/${event.file.absolutePath}?content",
             "color": "#36a64f"
@@ -109,33 +122,17 @@ class SlackImageDiffNotifier : FtpEventListener {
       ]
     }
     """.trimIndent()
-//    return """
-//    {
-//    "attachments": [
-//        {
-//            "fallback": "$message",
-//            "color": "#36a64f",
-//            "author_name": "MiFtp server: ${event.user.name}",
-//            "author_link": "$baseUrl",
-//            "title": "New image: ${event.file.name}",
-//            "title_link": "$baseUrl/files/${event.file.absolutePath}?content",
-//            "text": "$message",
-//            "footer": "MiFtp",
-//            "ts": ${event.timestamp.atZone(ZoneId.systemDefault()).toEpochSecond()}
-//        }
-//      ]
-//    }
-//    """.trimIndent()
   }
 
 
   data class DiffResult(val first: FtpFile, val second: FtpFile,
-                        val diffValue: Double, val diffThreshold: Double) {
+                        val diffValue: Double, val diffIgnore: Double, val diffThreshold: Double) {
 
     fun isDifferent() = diffValue < diffThreshold
+    fun ignore() = diffValue < diffIgnore
 
-    fun ifDifferent(run: (r: DiffResult) -> Unit) {
-      if(isDifferent()) {
+    fun ifDifferentAndNotIgnored(run: (r: DiffResult) -> Unit) {
+      if(isDifferent() && !ignore()) {
         run(this)
       }
     }
