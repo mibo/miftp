@@ -84,25 +84,48 @@ class SlackImageDiffNotifier : FtpEventListener {
   }
 
   private fun createJsonPostContent(baseUrl: String, event: FileSystemEvent, diff: DiffResult) : String {
-    val message = "File compare (first=${diff.first.name} to second=${diff.second.name}): ${diff.diffValue} (${diff.isDifferent()})"
+    val message = "Image compare (first=${diff.first.name} to second=${diff.second.name}): ${diff.diffValue} (${diff.isDifferent()})"
 
     return """
     {
     "attachments": [
         {
-            "fallback": "$message",
-            "color": "#36a64f",
             "author_name": "MiFtp server: ${event.user.name}",
             "author_link": "$baseUrl",
-            "title": "${event.type.name}: ${event.file.name}",
+            "pretext": "Different image created...",
+            "fallback": "There is a difference between images.",
+            "title": "New image: ${diff.first.name}",
             "title_link": "$baseUrl/files/${event.file.absolutePath}?content",
-            "text": "$message",
+            "color": "#36a64f"
+        },
+        {
+            "title": "Previous image: ${diff.second.name}",
+            "title_link": "$baseUrl/files/${diff.second.absolutePath}?content",
+            "text": "Difference between images: ${diff.diffValue} (${diff.isDifferent()})",
+            "color": "#003CA6",
             "footer": "MiFtp",
             "ts": ${event.timestamp.atZone(ZoneId.systemDefault()).toEpochSecond()}
         }
       ]
     }
     """.trimIndent()
+//    return """
+//    {
+//    "attachments": [
+//        {
+//            "fallback": "$message",
+//            "color": "#36a64f",
+//            "author_name": "MiFtp server: ${event.user.name}",
+//            "author_link": "$baseUrl",
+//            "title": "New image: ${event.file.name}",
+//            "title_link": "$baseUrl/files/${event.file.absolutePath}?content",
+//            "text": "$message",
+//            "footer": "MiFtp",
+//            "ts": ${event.timestamp.atZone(ZoneId.systemDefault()).toEpochSecond()}
+//        }
+//      ]
+//    }
+//    """.trimIndent()
   }
 
 
