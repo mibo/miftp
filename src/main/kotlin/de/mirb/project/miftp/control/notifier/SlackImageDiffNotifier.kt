@@ -34,7 +34,7 @@ class SlackImageDiffNotifier : FtpEventListener {
     url = getOrThrow(parameters, PARA_WEBHOOK_URL)
     serverBaseUrl = createServerBaseUrl(parameters)
     diffThreshold = readDiffThreshold(parameters)
-    diffIgnore = readDiffThreshold(parameters)
+    diffIgnore = readDiffIgnoreThreshold(parameters)
     return this
   }
 
@@ -89,10 +89,11 @@ class SlackImageDiffNotifier : FtpEventListener {
   private fun slackPost(message: String) {
     val client = HttpClient()
     runBlocking {
+      LOG.debug("POST to $url")
       val htmlContent = client.post<String>(url) {
         body = message
       }
-      LOG.info("Result $htmlContent")
+      LOG.debug("POST response $htmlContent")
     }
   }
 
@@ -108,7 +109,7 @@ class SlackImageDiffNotifier : FtpEventListener {
             "pretext": "Different image created...",
             "fallback": "There is a difference between images ($message).",
             "title": "New image: ${diff.first.name}",
-            "title_link": "$baseUrl/files/${event.file.absolutePath}?content",
+            "title_link": "$baseUrl/files/${diff.first.absolutePath}?content",
             "color": "#36a64f"
         },
         {
