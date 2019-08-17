@@ -89,8 +89,10 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
   }
 
   public void uploadFinished() {
-    uploadFinished = true;
-    fsView.updateListener(this, FileSystemEvent.EventType.CREATED);
+    if(!uploadFinished) {
+      uploadFinished = true;
+      fsView.updateListener(this, FileSystemEvent.EventType.CREATED);
+    }
   }
 
   private boolean isUploadOngoing() {
