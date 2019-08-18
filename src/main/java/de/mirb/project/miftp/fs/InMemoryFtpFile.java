@@ -8,14 +8,17 @@ import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 /**
  * Created by mibo on 21.04.17.
  */
 public class InMemoryFtpFile extends InMemoryFtpPath {
 
-  private InMemoryByteArrayOutputStream bout;
+  private InMemoryByteArrayOutputStream bout = new InMemoryByteArrayOutputStream(this);;
   private byte[] content;
   private boolean uploadFinished;
+//  private boolean locked;
 
   public InMemoryFtpFile(InMemoryFsView view, InMemoryFtpDir parentDir, String name) {
     super(view, parentDir, name);
@@ -37,8 +40,20 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
 
   @Override
   public boolean isRemovable() {
-    return isFlushed();
+    return true;
   }
+
+  @Override
+  public boolean delete() {
+    bout.reset();
+    content = null;
+
+    fsView.removePath(this);
+    parentDir.removeChildPath(this);
+    return true;
+  }
+
+
 
   @Override
   public long getSize() {
@@ -56,17 +71,24 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
   }
 
   private byte[] getContent() {
-    synchronized (name) {
-//      waitForCondition(100, MILLISECONDS, 3, this::isUploadOngoing);
-      if(isFlushed()) {
-        if(content == null) {
-          content = bout.toByteArray();
-        }
-      } else {
-        return new byte[0];
-      }
+    return getContent(true);
+  }
+
+  private byte[] getContent(boolean wait) {
+    if(content != null) {
+      return content;
     }
-    return content;
+
+    synchronized (name) {
+      if(isFlushed()) {
+        content = bout.toByteArray();
+        return content;
+      } else if(wait) {
+        waitForCondition(100, MILLISECONDS, 3, this::isUploadOngoing);
+        return getContent(false);
+      }
+      return new byte[0];
+    }
   }
 
   private void waitForCondition(long timeValue, TimeUnit timeUnit, int retries, Supplier<Boolean> condition) {
@@ -82,13 +104,13 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
 
   @Override
   public OutputStream createOutputStream(long l) {
-    bout = new InMemoryByteArrayOutputStream(this);
+    bout.reset();
     content = null;
     lastModified = System.currentTimeMillis();
     return bout;
   }
 
-  public void uploadFinished() {
+  public void setUploadToFinished() {
     if(!uploadFinished) {
       uploadFinished = true;
       fsView.updateListener(this, FileSystemEvent.EventType.CREATED);
@@ -99,11 +121,17 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
     return !isFlushed();
   }
 
+  /**
+   * Flushed is true if an upload finished (but false if nothing was uploaded yet)
+   * @return
+   */
   public boolean isFlushed() {
-    if(bout == null || !uploadFinished) {
-      return false;
-    } 
-    return bout.isClosed();
+    if(uploadFinished) {
+      return true;
+    } else if(bout != null) {
+      return bout.isClosed();
+    }
+    return false;
   }
 
 }

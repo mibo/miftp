@@ -12,9 +12,11 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.util.KeyManagerUtils;
 import org.apache.commons.net.util.TrustManagerUtils;
 import org.apache.ftpserver.ftplet.FtpException;
+import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.mina.filter.ssl.KeyStoreFactory;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -30,12 +32,12 @@ import java.net.ServerSocket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static de.mirb.project.miftp.fs.listener.FileSystemEvent.EventType.CREATED;
 import static org.junit.Assert.*;
@@ -287,7 +289,6 @@ public class BasicServerTest {
   }
 
   @Test
-//  @Ignore("not yet supported")
   public void createDirectoryMultiPath() throws Exception {
     FTPClient client = createFtpClient();
     client.connect(hostname, serverPort);
@@ -305,6 +306,96 @@ public class BasicServerTest {
     assertTrue(client.changeWorkingDirectory(pathOne));
     files = client.listDirectories();
     assertEquals(1, files.length);
+    //
+    client.disconnect();
+  }
+
+
+  /**
+   * Regression test for a bug
+   * @throws Exception
+   */
+  @Test
+  public void createDirectoryAsPathOnly() throws Exception {
+    FTPClient client = getVerifiedFtpClient();
+    //
+    FTPFile[] files = client.listDirectories();
+    assertEquals(0, files.length);
+    String testDirName = "testDir";
+    boolean initResult = client.changeWorkingDirectory(testDirName);
+    System.out.println(client.printWorkingDirectory());
+    assertFalse(initResult);
+    boolean removed = client.removeDirectory(testDirName);
+    assertFalse(removed);
+    files = client.listDirectories();
+    assertEquals(0, files.length);
+    //
+    String subDir = "subDir";
+    assertTrue(client.makeDirectory(subDir));
+    assertTrue(client.changeWorkingDirectory(subDir));
+    assertTrue(client.changeWorkingDirectory("/"));
+    assertFalse(client.removeDirectory(subDir));
+
+    client.disconnect();
+  }
+
+  @Test
+  @Ignore("implement")
+  public void removeDirectory() throws Exception {
+    FTPClient client = getVerifiedFtpClient();
+    //
+    FTPFile[] files = client.listDirectories();
+    assertEquals(0, files.length);
+    String testDirName = "testDir";
+    boolean initResult = client.changeWorkingDirectory(testDirName);
+    System.out.println(client.printWorkingDirectory());
+    assertFalse(initResult);
+    boolean removed = client.removeDirectory(testDirName);
+    assertFalse(removed);
+    files = client.listDirectories();
+    assertEquals(0, files.length);
+    //
+    String subDir = "subDir";
+    assertTrue(client.makeDirectory(subDir));
+    assertTrue(client.changeWorkingDirectory(subDir));
+    assertTrue(client.changeWorkingDirectory("/"));
+    assertTrue(client.removeDirectory(subDir));
+
+    client.disconnect();
+  }
+
+
+  @Test
+  @Ignore("First implement")
+  public void removeDirectoryAndSubDirs() throws Exception {
+    FTPClient client = createFtpClient();
+    client.connect(hostname, serverPort);
+    client.login(user, password);
+    //
+    FTPFile[] files = client.listDirectories();
+    assertEquals(0, files.length);
+    String testDirName = "testDir";
+    boolean mkResult = client.makeDirectory(testDirName);
+    assertTrue(mkResult);
+    files = client.listDirectories();
+    assertEquals(1, files.length);
+    assertEquals(testDirName, files[0].getName());
+    assertTrue(client.changeWorkingDirectory(testDirName));
+    files = client.listDirectories();
+    assertEquals(0, files.length);
+    //
+    for (int i = 0; i < 10; i++) {
+      String pathname = testDirName + "-" + i;
+      assertTrue(client.makeDirectory(pathname));
+      FTPFile[] ftpFiles = client.listDirectories();
+      assertEquals(1, ftpFiles.length);
+      assertEquals(pathname, ftpFiles[0].getName());
+      assertTrue(client.changeWorkingDirectory(pathname));
+      ftpFiles = client.listDirectories();
+      assertEquals(0, ftpFiles.length);
+    }
+    // delete
+
     //
     client.disconnect();
   }
@@ -358,6 +449,118 @@ public class BasicServerTest {
     client.disconnect();
   }
 
+  @Test
+  public void deleteFile() throws Exception {
+    FTPClient client = getVerifiedFtpClient();
+    String remotePath = "/testdir/testFile.txt";
+    String localFilename = "testFile.txt";
+    uploadFileTo(client, remotePath, localFilename);
+
+    // delete
+
+    boolean success = client.deleteFile(remotePath);
+    assertTrue(success);
+
+    // verify
+    String path = extractPath(remotePath);
+    client.changeWorkingDirectory(path);
+    FTPFile[] files = client.listFiles();
+    assertEquals("Expected no files but found: " + Arrays.toString(files), 0, files.length);
+
+    client.disconnect();
+  }
+
+  /**
+   * Get path before last `/`.
+   * @param remotePath
+   * @return
+   */
+  private String extractPath(String remotePath) {
+    List<String> all = Arrays.asList(remotePath.split("/"));
+    return String.join("/", all.subList(0, all.size()-1));
+  }
+
+  /**
+   * Get path after last `/` (which is normally the filename).
+   * @param path
+   * @return
+   */
+  private String extractFilename(String path) {
+    List<String> all = Arrays.asList(path.split("/"));
+    return all.get(all.size()-1);
+  }
+
+
+  /*
+   * Below are NO tests only supporting methods
+   */
+
+
+
+  private void uploadFileTo(FTPClient client, String remotePath, String testFilename) throws IOException {
+    // upload test file
+    ClassLoader loader = Thread.currentThread().getContextClassLoader();
+    try (InputStream filestream = loader.getResourceAsStream(testFilename)) {
+      boolean result = client.storeFile(remotePath, filestream);
+      assertTrue(result);
+    }
+
+//    Optional<String> remoteFilename = Arrays.stream(remotePath.split("/"))
+//        .reduce((acc, in) -> in);
+
+    String[] pathElements = remotePath.split("/");
+    String remoteFilename = pathElements[pathElements.length-1];
+    //
+
+//    Arrays.stream(pathElements).forEach(noException(p -> client.changeWorkingDirectory(p)));
+    Arrays.stream(pathElements).forEach(p -> {
+      try {
+        client.changeWorkingDirectory(p);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    });
+
+    // verify file was uploaded
+    String[] filenames = client.listNames();
+    assertEquals(1, filenames.length);
+    assertEquals(remoteFilename, filenames[0]);
+  }
+
+  private <T, R> Function<T, R> noException(Function<T, R> in) {
+    return para -> {
+      try {
+        return in.apply(para);
+      } catch (Exception e) {
+        //
+        throw new RuntimeException(e);
+      }
+    };
+  }
+
+//
+//  @FunctionalInterface
+//  public interface FunctionWithException<T, R, E extends Exception> {
+//
+//    R apply(T t) throws E;
+//  }
+//  private <T, R, E extends Exception>
+//  Function<T, R> wrapper(FunctionWithException<T, R, E> fe) {
+//    return arg -> {
+//      try {
+//        return fe.apply(arg);
+//      } catch (Exception e) {
+//        throw new RuntimeException(e);
+//      }
+//    };
+//  }
+
+  /**
+   * Create client and verify connection before returning it.
+   *
+   * @return the client
+   * @throws Exception if something goes wrong
+   */
   private FTPClient getVerifiedFtpClient() throws Exception {
     FTPClient client = createFtpClient();
     client.connect(hostname, serverPort);
