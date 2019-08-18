@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Planned changes/updates/fixes/features for to be part of one of the next _releases/versions_:
   * Add feature to _FTP_ server to allow to keep _flagged_ images longer (to enable  `SlackImageDiffNotifier` to flag images) 
 
+## [0.8.0-SNAPSHOT] - 2019-xx-xx
+### Added
+  * ...
+
+### Changed
+  * ...
+
+### Fixed
+  * ...
+
 ## [0.7.0] - 2019-08-18
 ### Added
   * New endpoint `/go/latestFile?content` to get latest modified file

@@ -27,7 +27,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 group = 'de.mirb.project'
-version = '0.7.0'
+version = '0.8.0-SNAPSHOT'
 sourceCompatibility = 1.8
 compileKotlin {
 	kotlinOptions {
