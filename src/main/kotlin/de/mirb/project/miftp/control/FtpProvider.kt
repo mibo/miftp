@@ -2,6 +2,7 @@ package de.mirb.project.miftp.control
 
 import de.mirb.project.miftp.FtpServerConfig
 import de.mirb.project.miftp.MiFtpServer
+import de.mirb.project.miftp.control.notifier.SlackImageDiffNotifier
 import de.mirb.project.miftp.control.notifier.SlackNotifier
 import de.mirb.project.miftp.fs.InMemoryFileSystemConfig
 import de.mirb.project.miftp.fs.listener.FileSystemListener
@@ -89,6 +90,7 @@ class FtpProvider {
     return when (eventListener) {
       "" -> FileSystemListener { }
       "SlackNotifier" -> SlackNotifier().init(eventListenerParameters)
+      "SlackImageDiffNotifier" -> SlackImageDiffNotifier().init(eventListenerParameters)
       else -> handleMissingEventListener()
     }
   }

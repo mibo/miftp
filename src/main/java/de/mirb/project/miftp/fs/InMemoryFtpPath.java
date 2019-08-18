@@ -63,10 +63,6 @@ public class InMemoryFtpPath implements FtpFile {
     }
   }
 
-  public InMemoryFtpFile asFile() {
-    throw new IllegalStateException("Not a file.");
-  }
-
   @Override
   public String getName() {
     return name;

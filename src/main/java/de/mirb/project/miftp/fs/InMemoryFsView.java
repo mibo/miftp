@@ -55,13 +55,13 @@ public class InMemoryFsView implements FileSystemView {
   }
 
   void updatePath(InMemoryFtpPath path) {
-    updateListener(path, FileSystemEvent.EventType.CREATED);
+//    updateListener(path, FileSystemEvent.EventType.CREATED);
     LOG.debug("Updated path '{}'", path);
     name2Path.put(path.getAbsolutePath(), path);
 //    LOG.debug("Paths after update: " + name2Path.toString());
   }
 
-  private void updateListener(InMemoryFtpPath path, FileSystemEvent.EventType created) {
+  void updateListener(InMemoryFtpPath path, FileSystemEvent.EventType created) {
     if (config.getFileSystemListener() != null) {
       try {
         BasicFileSystemEvent event = with(created).file(path).user(user).build();
@@ -74,9 +74,9 @@ public class InMemoryFsView implements FileSystemView {
   }
 
   void removePath(InMemoryFtpPath path) {
-    updateListener(path, FileSystemEvent.EventType.DELETED);
     LOG.debug("Removed path '{}'", path);
     name2Path.remove(path.getAbsolutePath());
+    updateListener(path, FileSystemEvent.EventType.DELETED);
 //    LOG.debug("Paths after removal: " + name2Path.toString());
   }
 

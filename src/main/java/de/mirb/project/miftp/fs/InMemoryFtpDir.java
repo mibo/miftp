@@ -1,5 +1,6 @@
 package de.mirb.project.miftp.fs;
 
+import de.mirb.project.miftp.fs.listener.FileSystemEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,6 +180,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
     InMemoryFtpDir dir = new InMemoryFtpDir(fsView, this, inMemoryFtpPath.getName());
     name2File.put(inMemoryFtpPath.getName(), dir);
     fsView.updatePath(dir);
+    fsView.updateListener(dir, FileSystemEvent.EventType.CREATED);
     return dir;
   }
 
