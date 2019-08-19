@@ -156,6 +156,10 @@ public class InMemoryFtpPath implements FtpFile {
     return false;
   }
 
+  public boolean forceDelete() {
+    return false;
+  }
+
   @Override
   public boolean move(FtpFile ftpFile) {
     return false;

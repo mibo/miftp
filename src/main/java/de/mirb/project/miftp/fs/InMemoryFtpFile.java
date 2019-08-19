@@ -18,7 +18,7 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
   private InMemoryByteArrayOutputStream bout = new InMemoryByteArrayOutputStream(this);;
   private byte[] content;
   private boolean uploadFinished;
-//  private boolean locked;
+  private boolean locked;
 
   public InMemoryFtpFile(InMemoryFsView view, InMemoryFtpDir parentDir, String name) {
     super(view, parentDir, name);
@@ -40,11 +40,19 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
 
   @Override
   public boolean isRemovable() {
-    return true;
+    return !isLocked();
   }
 
   @Override
   public boolean delete() {
+    if(isRemovable()) {
+      return forceDelete();
+    }
+    return false;
+  }
+
+  @Override
+  public boolean forceDelete() {
     bout.reset();
     content = null;
 
@@ -53,7 +61,13 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
     return true;
   }
 
+  public void setLocked(boolean locked) {
+    this.locked = locked;
+  }
 
+  public boolean isLocked() {
+    return locked;
+  }
 
   @Override
   public long getSize() {
@@ -113,6 +127,8 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
   public void setUploadToFinished() {
     if(!uploadFinished) {
       uploadFinished = true;
+      // ..
+      getContent(false);
       fsView.updateListener(this, FileSystemEvent.EventType.CREATED);
     }
   }

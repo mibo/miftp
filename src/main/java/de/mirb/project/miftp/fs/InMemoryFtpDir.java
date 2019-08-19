@@ -146,7 +146,8 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
     if(removed == null) {
       throw new IllegalStateException(String.format("Invalid path '%s' for removal.", name));
     }
-    removed.delete();
+    // in this case we force the deletion
+    removed.forceDelete();
     return removed;
   }
 
