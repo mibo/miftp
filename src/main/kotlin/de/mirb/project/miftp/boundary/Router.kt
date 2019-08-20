@@ -1,5 +1,6 @@
 package de.mirb.project.miftp.boundary
 
+import de.mirb.project.miftp.BuildInfo
 import de.mirb.project.miftp.control.FtpHandler
 import de.mirb.project.miftp.control.FtpProvider
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,6 +18,8 @@ class Router {
   lateinit var handler: FtpHandler
   @Autowired
   lateinit var ftpProvider: FtpProvider
+  @Autowired
+  lateinit var buildInfo: BuildInfo
 
   @Bean
   fun route() = router {
@@ -24,7 +27,7 @@ class Router {
 
     // basic health state
     GET("/health") {
-      return@GET ok().body(fromObject(HealthState("OK", handler.getFilesCount(user))))
+      return@GET ok().body(fromObject(HealthState("OK", handler.getFilesCount(user), buildInfo)))
     }
     // latest file
     GET("/go/latestFile") {
@@ -63,5 +66,5 @@ class Router {
     return handler.getFileByPath(user, path)
   }
 
-  data class HealthState(val state: String, val filesCount: Int)
+  data class HealthState(val state: String, val filesCount: Int, val buildInfo: BuildInfo)
 }
