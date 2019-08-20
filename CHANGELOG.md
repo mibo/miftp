@@ -18,6 +18,16 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
 ### Fixed
   * ...
 
+## [0.7.1] - 2019-08-20
+### Added
+  * Added direct base url access (not only '/')
+  * Added build info to health state and html view
+  * Added option to 'lock' files for deletion
+
+### Fixed
+  * 769a9f9 (origin/fix-path-removal-issue) Fix for strange behavior of some FTP clients
+  * 68aa190 Improved path/file/dir deletion
+
 ## [0.7.0] - 2019-08-18
 ### Added
   * New endpoint `/go/latestFile?content` to get latest modified file
