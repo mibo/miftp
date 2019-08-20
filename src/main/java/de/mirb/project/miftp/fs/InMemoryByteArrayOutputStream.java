@@ -10,13 +10,21 @@ public class InMemoryByteArrayOutputStream extends ByteArrayOutputStream {
     this.file = file;
   }
 
+  @Override
+  public synchronized void reset() {
+    super.reset();
+    closed = false;
+  }
+
   public boolean isClosed() {
     return closed;
   }
 
   @Override
   public void close() {
+    // Closing a <tt>ByteArrayOutputStream</tt> has no effect...
+    // super.close();
     closed = true;
-    file.uploadFinished();
+    file.setUploadToFinished();
   }
 }
