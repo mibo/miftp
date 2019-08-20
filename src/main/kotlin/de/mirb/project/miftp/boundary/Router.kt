@@ -1,6 +1,7 @@
 package de.mirb.project.miftp.boundary
 
 import de.mirb.project.miftp.BuildInfo
+import de.mirb.project.miftp.MiftpApplication
 import de.mirb.project.miftp.control.FtpHandler
 import de.mirb.project.miftp.control.FtpProvider
 import org.springframework.beans.factory.annotation.Autowired
