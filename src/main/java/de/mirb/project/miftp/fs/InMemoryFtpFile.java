@@ -15,7 +15,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  */
 public class InMemoryFtpFile extends InMemoryFtpPath {
 
-  private InMemoryByteArrayOutputStream bout = new InMemoryByteArrayOutputStream(this);;
+  private InMemoryByteArrayOutputStream bout = new InMemoryByteArrayOutputStream(this);
   private byte[] content;
   private boolean uploadFinished;
   private boolean locked;
@@ -54,7 +54,7 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
   @Override
   public boolean forceDelete() {
     bout.reset();
-    content = null;
+//    content = null;
 
     fsView.removePath(this);
     parentDir.removeChildPath(this);
@@ -118,13 +118,18 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
 
   @Override
   public OutputStream createOutputStream(long l) {
+//    System.out.println(String.format("LOG::createOutputStream(%d) called for: %s", l, getName()));
     bout.reset();
     content = null;
     lastModified = System.currentTimeMillis();
     return bout;
   }
 
-  public void setUploadToFinished() {
+  /**
+   * If called the file is handled as completely uploaded.
+   * This is only called from the {@link InMemoryByteArrayOutputStream}.
+   */
+  void setUploadToFinished() {
     if(!uploadFinished) {
       uploadFinished = true;
       // ..
@@ -149,5 +154,4 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
     }
     return false;
   }
-
 }

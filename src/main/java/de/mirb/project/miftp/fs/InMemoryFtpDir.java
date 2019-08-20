@@ -108,6 +108,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
    * FIXME: to use global config settings does not make sense (only for current supported use case but not in general)
    */
   private void cleanUpFiles() {
+    final long start = System.currentTimeMillis();
     while(config.getMaxFiles() > 0 && name2FtpPaths.size() > config.getMaxFiles()) {
       LOG.debug("Run cleanup path for max files '{}' with current '{}' files listed.",
           config.getMaxFiles(), name2FtpPaths.size());
@@ -130,9 +131,10 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
     // check for old files
     long ttlInMilliseconds = config.getTtlInMilliseconds();
     if(ttlInMilliseconds > 0) {
-      LOG.debug("Run cleanup path for ttlInMilliseconds '{}'.", ttlInMilliseconds);
+      LOG.debug("Remove files older then '{}' milliseconds.", ttlInMilliseconds);
       removeFilesOlderThen(ttlInMilliseconds);
     }
+    LOG.debug("Run cleanup files for '{}' milliseconds.", System.currentTimeMillis() - start);
   }
 
   /**

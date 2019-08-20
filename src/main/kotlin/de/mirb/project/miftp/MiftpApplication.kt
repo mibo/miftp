@@ -8,6 +8,8 @@ import org.springframework.boot.runApplication
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 
 @SpringBootApplication
 class MiftpApplication {
@@ -37,12 +39,14 @@ class MiftpApplication {
     println("build version is <" + buildProperties.version + ">")
     println("build time is <" + buildProperties.time + ">")
 
-    buildInfo = BuildInfo(buildProperties.version, buildProperties.time.toString())
+//    buildInfo = BuildInfo(buildProperties.version, buildProperties.time.toString())
+    buildInfo.version = buildProperties.version
+    buildInfo.timestamp = buildProperties.time.toString()
 //    println("value for custom key 'foo' is <" + buildProperties.get("foo") + ">")
   }
 }
 
-data class BuildInfo(val version: String, val timestamp: String)
+data class BuildInfo(var version: String, var timestamp: String)
 
 fun main(args: Array<String>) {
   runApplication<MiftpApplication>(*args)
