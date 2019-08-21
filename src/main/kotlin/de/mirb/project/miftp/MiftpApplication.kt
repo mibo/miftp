@@ -8,8 +8,6 @@ import org.springframework.boot.runApplication
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
-import org.springframework.core.Ordered
-import org.springframework.core.annotation.Order
 
 @SpringBootApplication
 class MiftpApplication {

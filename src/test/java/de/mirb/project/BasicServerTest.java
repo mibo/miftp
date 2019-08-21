@@ -12,7 +12,6 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.util.KeyManagerUtils;
 import org.apache.commons.net.util.TrustManagerUtils;
 import org.apache.ftpserver.ftplet.FtpException;
-import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.mina.filter.ssl.KeyStoreFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -35,9 +34,7 @@ import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static de.mirb.project.miftp.fs.listener.FileSystemEvent.EventType.CREATED;
 import static org.junit.Assert.*;
