@@ -16,7 +16,7 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
   * ...
 
 ### Fixed
-  * ...
+  * Fix deletion issue (workaround) for some strange FTP client
 
 ## [0.7.1] - 2019-08-20
 ### Added
