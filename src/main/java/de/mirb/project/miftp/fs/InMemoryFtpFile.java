@@ -16,8 +16,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public class InMemoryFtpFile extends InMemoryFtpPath {
 
   private InMemoryByteArrayOutputStream bout = new InMemoryByteArrayOutputStream(this);
-  private byte[] content;
-  private boolean uploadFinished;
   private boolean locked;
 
   public InMemoryFtpFile(InMemoryFsView view, InMemoryFtpDir parentDir, String name) {
@@ -53,9 +51,7 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
 
   @Override
   public boolean forceDelete() {
-    bout.reset();
-//    content = null;
-
+//    bout.reset();
     fsView.removePath(this);
     parentDir.removeChildPath(this);
     return true;
@@ -89,14 +85,9 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
   }
 
   private byte[] getContent(boolean wait) {
-    if(content != null) {
-      return content;
-    }
-
     synchronized (name) {
       if(isFlushed()) {
-        content = bout.toByteArray();
-        return content;
+        return bout.toByteArray();
       } else if(wait) {
         waitForCondition(100, MILLISECONDS, 3, this::isUploadOngoing);
         return getContent(false);
@@ -120,7 +111,6 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
   public OutputStream createOutputStream(long l) {
 //    System.out.println(String.format("LOG::createOutputStream(%d) called for: %s", l, getName()));
     bout.reset();
-    content = null;
     lastModified = System.currentTimeMillis();
     return bout;
   }
@@ -130,12 +120,7 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
    * This is only called from the {@link InMemoryByteArrayOutputStream}.
    */
   void setUploadToFinished() {
-    if(!uploadFinished) {
-      uploadFinished = true;
-      // ..
-      getContent(false);
-      fsView.updateListener(this, FileSystemEvent.EventType.CREATED);
-    }
+    fsView.updateListener(this, FileSystemEvent.EventType.CREATED);
   }
 
   private boolean isUploadOngoing() {
@@ -147,11 +132,6 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
    * @return
    */
   public boolean isFlushed() {
-    if(uploadFinished) {
-      return true;
-    } else if(bout != null) {
-      return bout.isClosed();
-    }
-    return false;
+    return bout.isClosed();
   }
 }

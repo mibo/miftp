@@ -24,7 +24,9 @@ public class InMemoryByteArrayOutputStream extends ByteArrayOutputStream {
   public void close() {
     // Closing a <tt>ByteArrayOutputStream</tt> has no effect...
     // super.close();
-    closed = true;
-    file.setUploadToFinished();
+    if(!closed) {
+      closed = true;
+      file.setUploadToFinished();
+    }
   }
 }

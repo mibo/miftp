@@ -1,5 +1,6 @@
 package de.mirb.project.miftp.control.notifier
 
+import de.mirb.project.miftp.fs.InMemoryFtpFile
 import de.mirb.project.miftp.fs.listener.FileSystemEvent
 import de.mirb.project.miftp.image.ImageComparator
 import io.ktor.client.HttpClient
@@ -65,6 +66,9 @@ class SlackImageDiffNotifier : FtpEventListener {
           }
         }
         lastImage = event.file
+        if (lastImage is InMemoryFtpFile) {
+          (lastImage as InMemoryFtpFile).isLocked = true
+        }
       }
     }
   }

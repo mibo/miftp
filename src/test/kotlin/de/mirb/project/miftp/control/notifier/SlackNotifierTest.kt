@@ -5,7 +5,6 @@ import org.hamcrest.Matchers.*
 import org.junit.Assert.assertThat
 import org.junit.Assert.fail
 import org.junit.Test
-import java.lang.IllegalArgumentException
 
 class SlackNotifierTest {
 
