@@ -15,8 +15,9 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
   private static final Logger LOG = LoggerFactory.getLogger(InMemoryFtpDir.class);
 
   /** Contains <code>filename</code> to <code>InMemoryFtpPath</code> instance
-   *  The <code>filename</code> is the name without path (see <code>inMemoryFtpPath.getName()</code>) */
-  private final Map<String, InMemoryFtpPath> name2FtpPaths = new HashMap<>();
+   *  The <code>filename</code> is the name without path (see <code>inMemoryFtpPath.getName()</code>).
+   *  The map is sorted by filename (keys) */
+  private final Map<String, InMemoryFtpPath> name2ChildFtpPath = Collections.synchronizedSortedMap(new TreeMap<>());
   private final InMemoryFileSystemConfig config;
 
   public InMemoryFtpDir(InMemoryFsView view, String name) {
@@ -76,7 +77,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
 
   @Override
   public long getSize() {
-    return name2FtpPaths.values().stream()
+    return name2ChildFtpPath.values().stream()
         .collect(Collectors.summarizingLong(InMemoryFtpPath::getSize)).getSum();
   }
 
@@ -86,9 +87,9 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
 
   public InMemoryFtpPath grantPath(String name) {
     if(LOG.isDebugEnabled()) {
-      LOG.debug("Grant path '{}' (exists={}).", name, name2FtpPaths.containsKey(name));
+      LOG.debug("Grant path '{}' (exists={}).", name, name2ChildFtpPath.containsKey(name));
     }
-    return name2FtpPaths.computeIfAbsent(name, this::createPath);
+    return name2ChildFtpPath.computeIfAbsent(name, this::createPath);
   }
 
   /**
@@ -100,7 +101,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
     cleanUpFiles();
     // recurse
     // TODO: only make sense if directories are supported (instead of `InMemoryFtpFile` then `InMemoryFtpPath`)
-    name2FtpPaths.values().forEach(InMemoryFtpPath::cleanUpPath);
+    name2ChildFtpPath.values().forEach(InMemoryFtpPath::cleanUpPath);
   }
 
   /**
@@ -109,9 +110,9 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
    */
   private void cleanUpFiles() {
     final long start = System.currentTimeMillis();
-    while(config.getMaxFiles() > 0 && name2FtpPaths.size() > config.getMaxFiles()) {
+    while(config.getMaxFiles() > 0 && name2ChildFtpPath.size() > config.getMaxFiles()) {
       LOG.debug("Run cleanup path for max files '{}' with current '{}' files listed.",
-          config.getMaxFiles(), name2FtpPaths.size());
+          config.getMaxFiles(), name2ChildFtpPath.size());
       // remove oldest
       removeAndDeleteChild(getOldestFilesName());
     }
@@ -144,7 +145,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
    * @return
    */
   private InMemoryFtpPath removeAndDeleteChild(String name) {
-    InMemoryFtpPath removed = name2FtpPaths.remove(name);
+    InMemoryFtpPath removed = name2ChildFtpPath.remove(name);
     if(removed == null) {
       throw new IllegalStateException(String.format("Invalid path '%s' for removal.", name));
     }
@@ -159,11 +160,11 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
    * @param path to be removed
    */
   void removeChildPath(InMemoryFtpPath path) {
-    name2FtpPaths.remove(path.name);
+    name2ChildFtpPath.remove(path.name);
   }
 
   private void removeFilesOlderThen(long ttlInMilliseconds) {
-    List<InMemoryFtpPath> toRemove = name2FtpPaths.values().stream()
+    List<InMemoryFtpPath> toRemove = name2ChildFtpPath.values().stream()
         .filter(InMemoryFtpPath::isFile)
         .filter(f -> (System.currentTimeMillis() - f.getLastModified()) > ttlInMilliseconds)
         .filter(InMemoryFtpPath::isRemovable)
@@ -175,10 +176,10 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
   }
 
   private long currentMemoryConsumption() {
-    if(name2FtpPaths.isEmpty()) {
+    if(name2ChildFtpPath.isEmpty()) {
       return 0;
     }
-    return name2FtpPaths.values().stream()
+    return name2ChildFtpPath.values().stream()
         .collect(Collectors.summarizingLong(InMemoryFtpPath::getSize))
         .getSum();
   }
@@ -189,10 +190,10 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
    * @return
    */
   private String getOldestFilesName() {
-    if(name2FtpPaths.isEmpty()) {
+    if(name2ChildFtpPath.isEmpty()) {
       throw new IllegalStateException();
     }
-    return name2FtpPaths.values().stream()
+    return name2ChildFtpPath.values().stream()
         .filter(InMemoryFtpPath::isFile)
         .filter(InMemoryFtpPath::isFlushed)
         .min((first, second) -> (int) ((int) first.getLastModified() - second.getLastModified()))
@@ -216,13 +217,13 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
 
   @Override
   public List<InMemoryFtpPath> listFiles() {
-    return Collections.unmodifiableList(new ArrayList<>(name2FtpPaths.values()));
+    return Collections.unmodifiableList(new ArrayList<>(name2ChildFtpPath.values()));
   }
 
   public InMemoryFtpDir convertToDir(InMemoryFtpPath inMemoryFtpPath) {
     LOG.debug("Convert '{}' in dir '{}' to directory.", inMemoryFtpPath, this);
     InMemoryFtpDir dir = new InMemoryFtpDir(fsView, this, inMemoryFtpPath.getName());
-    name2FtpPaths.put(inMemoryFtpPath.getName(), dir);
+    name2ChildFtpPath.put(inMemoryFtpPath.getName(), dir);
     fsView.updatePath(dir);
     fsView.updateListener(dir, FileSystemEvent.EventType.CREATED);
     return dir;
@@ -231,7 +232,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
   public InMemoryFtpFile convertToFile(InMemoryFtpPath inMemoryFtpPath) {
     LOG.debug("Convert '{}' in dir '{}' to file.", inMemoryFtpPath, this);
     InMemoryFtpFile file = new InMemoryFtpFile(fsView, this, inMemoryFtpPath.getName());
-    name2FtpPaths.put(inMemoryFtpPath.getName(), file);
+    name2ChildFtpPath.put(inMemoryFtpPath.getName(), file);
     fsView.updatePath(file);
     return file;
   }

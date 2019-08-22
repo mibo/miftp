@@ -6,14 +6,17 @@ import org.apache.ftpserver.ftplet.FileSystemView;
 import org.apache.ftpserver.ftplet.FtpException;
 import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.ftpserver.ftplet.User;
+import org.apache.logging.log4j.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static de.mirb.project.miftp.fs.listener.BasicFileSystemEvent.with;
 
@@ -30,7 +33,9 @@ public class InMemoryFsView implements FileSystemView {
   private InMemoryFtpDir workingDir;
   private ScheduledFuture<?> cleanupScheduler;
 
-  private final Map<String, InMemoryFtpPath> name2Path = new HashMap<>();
+  /** Contains all current active (created and not deleted) InMemoryFtpPath instances
+   *  Mapping is from `absolute path (String)` to the InMemoryFtpPath instance */
+  private final Map<String, InMemoryFtpPath> name2Path = new ConcurrentHashMap<>();
 
   public InMemoryFsView(User user, InMemoryFileSystemConfig config) {
     this.user = user;
@@ -42,9 +47,135 @@ public class InMemoryFsView implements FileSystemView {
 
     if(config.getCleanupInterval() > 0) {
       cleanupScheduler = Executors.newSingleThreadScheduledExecutor()
-          .scheduleAtFixedRate(homeDir::cleanUpPath, 0, config.getCleanupInterval(), TimeUnit.SECONDS);
+          .scheduleAtFixedRate(this::cleanUpFilesystem, 0, config.getCleanupInterval(), TimeUnit.SECONDS);
     }
   }
+
+  private <T> void log(Level level, String message, Supplier<T> ... content) {
+    if(level.isLessSpecificThan(Level.DEBUG)) {
+      // trace
+      logTrace(message, content);
+    } else if(level.isLessSpecificThan(Level.INFO)) {
+      // debug
+      logDebug(message, content);
+    }
+  }
+
+  private <T> void logTrace(String message, Supplier<T> ... suppliers) {
+    if(LOG.isTraceEnabled()) {
+      List<Object> contentValues = new ArrayList<>(suppliers.length);
+      for (Supplier<T> supplier : suppliers) {
+        contentValues.add(supplier.get());
+      }
+      LOG.trace(message, contentValues);
+    }
+  }
+
+  private <T> void logDebug(String message, Supplier<T> ... suppliers) {
+    if(LOG.isDebugEnabled()) {
+      List<Object> contentValues = new ArrayList<>(suppliers.length);
+      for (Supplier<T> supplier : suppliers) {
+        contentValues.add(supplier.get());
+      }
+      LOG.debug(message, contentValues);
+    }
+  }
+
+  /**
+   * Remove all 'stale' (based on config) files managed by this FilesystemView.
+   */
+  @SuppressWarnings("unchecked")
+  private void cleanUpFilesystem() {
+    logDebug( "Run cleanup path start for '{}'.", () -> logContent(name2Path));
+    final long start = System.currentTimeMillis();
+    // TODO improve/reuse filtered list
+    int files = (int) name2Path.values().parallelStream().filter(InMemoryFtpPath::isFile).count();
+    if(config.getMaxFiles() > 0 && files > config.getMaxFiles()) {
+      LOG.debug("Run cleanup path for max files '{}' with current '{}' files listed.",
+          config.getMaxFiles(), files);
+
+      // remove oldest
+      List<InMemoryFtpPath> sorted = getSortedListOfFiles(
+          Comparator.comparingLong(path -> path.lastModified));
+      //
+      int deleteCount = (int) (sorted.size() - config.getMaxFiles());
+      sorted.subList(0, deleteCount).forEach(InMemoryFtpPath::forceDelete);
+      //removeAndDeleteChild(getOldestFilesName());
+    }
+    logTrace("Run cleanup path in between #1 '{}'.", () -> logContent(name2Path));
+
+    // check max memory size
+    long maxMemoryInBytes = config.getMaxMemoryInBytes();
+    if(maxMemoryInBytes > 0) {
+      long currentMemoryConsumption = currentMemoryConsumption();
+      LOG.debug("Run cleanup path for maxMemoryInBytes '{}' with current consumption '{}'.",
+          maxMemoryInBytes, currentMemoryConsumption);
+
+      // start deletion the oldest files to memory consume fits
+      Iterator<InMemoryFtpPath> sorted = getSortedListOfFiles(
+          Comparator.comparingLong(path -> path.lastModified))
+          .iterator();
+      while (currentMemoryConsumption > maxMemoryInBytes && sorted.hasNext()) {
+        InMemoryFtpPath removed = sorted.next();
+        removed.forceDelete();
+        LOG.debug("Removed '{}' for '{}' bytes.", removed.getName(), removed.getSize());
+        currentMemoryConsumption -= removed.getSize();
+      }
+    }
+    logTrace("Run cleanup path in between #2 '{}'.", () -> logContent(name2Path));
+
+    // check for old files
+    long ttlInMilliseconds = config.getTtlInMilliseconds();
+    if(ttlInMilliseconds > 0) {
+      LOG.debug("Remove files older then '{}' milliseconds.", ttlInMilliseconds);
+      removeFilesOlderThen(ttlInMilliseconds);
+    }
+    LOG.debug("Run cleanup files for '{}' milliseconds.", System.currentTimeMillis() - start);
+    logDebug("Run cleanup path end result '{}'.", () -> logContent(name2Path));
+  }
+
+  private String logContent(Map<String, InMemoryFtpPath> name2Path) {
+    if(LOG.isDebugEnabled()) {
+      return "\n" + name2Path.values().stream()
+          .map(path -> path.getName() + "(" + path.getAbsolutePath() + ")")
+          .collect(Collectors.joining(";\n"));
+    }
+    return "<no debug log set>";
+  }
+
+  private List<InMemoryFtpPath> getSortedListOfFiles(Comparator<InMemoryFtpFile> comparator) {
+    // remove oldest
+    return name2Path.values().parallelStream()
+        .filter(InMemoryFtpPath::isFile)
+        .map(path -> (InMemoryFtpFile) path)
+        .sorted(comparator)
+        .collect(Collectors.toList()); // instead using `limit` on the sorted stream we collect and then remove (-> performance)
+  }
+
+  private void removeFilesOlderThen(long ttlInMilliseconds) {
+    List<InMemoryFtpPath> toRemove = name2Path.values().parallelStream()
+        .filter(InMemoryFtpPath::isFile)
+        .filter(f -> (System.currentTimeMillis() - f.getLastModified()) > ttlInMilliseconds)
+        .filter(InMemoryFtpPath::isRemovable)
+        .peek((name) -> LOG.debug("Remove '{}' with timestamp '{}'", name.getName(), name.getLastModified()))
+//        .peek((name) -> LOG.debug("Remove {}", name))
+        .collect(Collectors.toList());
+
+    toRemove.forEach(InMemoryFtpPath::forceDelete);
+  }
+
+  private long currentMemoryConsumption() {
+    if(name2Path.isEmpty()) {
+      return 0;
+    }
+    // only collect for files because directories will count the files and sub dirs
+    return name2Path.values().parallelStream()
+        .filter(InMemoryFtpPath::isFile)
+        .collect(Collectors.summarizingLong(InMemoryFtpPath::getSize))
+        .getSum();
+  }
+
+
 
   User getUser() {
     return user;
@@ -78,6 +209,18 @@ public class InMemoryFsView implements FileSystemView {
     name2Path.remove(path.getAbsolutePath());
     updateListener(path, FileSystemEvent.EventType.DELETED);
 //    LOG.debug("Paths after removal: " + name2Path.toString());
+  }
+
+
+  @Override
+  public boolean isRandomAccessible() throws FtpException {
+    return false;
+  }
+
+  @Override
+  public void dispose() {
+    LOG.debug("Dispose FSView");
+    workingDir = homeDir;
   }
 
   @Override
@@ -195,14 +338,4 @@ public class InMemoryFsView implements FileSystemView {
     return granted;
   }
 
-  @Override
-  public boolean isRandomAccessible() throws FtpException {
-    return false;
-  }
-
-  @Override
-  public void dispose() {
-    LOG.debug("Dispose FSView");
-    workingDir = homeDir;
-  }
 }
