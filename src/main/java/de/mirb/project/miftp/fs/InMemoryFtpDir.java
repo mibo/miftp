@@ -50,7 +50,7 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
   @Override
   public boolean isRemovable() {
     // directory deletion is not supported yet
-    return false;
+    return name2ChildFtpPath.isEmpty();
   }
 
   @Override
@@ -71,8 +71,20 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
 
   @Override
   public boolean delete() {
-    // TODO: implement
-    return super.delete();
+    if(isRemovable()) {
+      return forceDelete();
+    }
+    return false;
+  }
+
+  @Override
+  public boolean forceDelete() {
+    // remove all childs
+    name2ChildFtpPath.values().forEach(InMemoryFtpPath::forceDelete);
+    // remove itself from view and parent
+    fsView.removePath(this);
+    parentDir.removeChildPath(this);
+    return true;
   }
 
   @Override
@@ -100,35 +112,19 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
     LOG.debug("Run cleanup path.");
     cleanUpFiles();
     // recurse
-    // TODO: only make sense if directories are supported (instead of `InMemoryFtpFile` then `InMemoryFtpPath`)
     name2ChildFtpPath.values().forEach(InMemoryFtpPath::cleanUpPath);
+    if(config.isRemoveEmptyDirs()) {
+      this.delete();
+    }
   }
 
   /**
    * Remove all 'stale' (based on config) files in this directory and
-   * FIXME: to use global config settings does not make sense (only for current supported use case but not in general)
+   * The only global setting which can be used here is the ttlInMilliseconds.
+   * Because of this only files older then given settings are deleted.
    */
   private void cleanUpFiles() {
     final long start = System.currentTimeMillis();
-    while(config.getMaxFiles() > 0 && name2ChildFtpPath.size() > config.getMaxFiles()) {
-      LOG.debug("Run cleanup path for max files '{}' with current '{}' files listed.",
-          config.getMaxFiles(), name2ChildFtpPath.size());
-      // remove oldest
-      removeAndDeleteChild(getOldestFilesName());
-    }
-    // check max memory size
-    long maxMemoryInBytes = config.getMaxMemoryInBytes();
-    if(maxMemoryInBytes > 0) {
-      long currentMemoryConsumption = currentMemoryConsumption();
-      LOG.debug("Run cleanup path for maxMemoryInBytes '{}' with current consumption '{}'.",
-          maxMemoryInBytes, currentMemoryConsumption);
-
-      while (currentMemoryConsumption > maxMemoryInBytes) {
-        InMemoryFtpPath removed = removeAndDeleteChild(getOldestFilesName());
-        LOG.debug("Removed '{}' for '{}' bytes.", removed.getName(), removed.getSize());
-        currentMemoryConsumption -= removed.getSize();
-      }
-    }
     // check for old files
     long ttlInMilliseconds = config.getTtlInMilliseconds();
     if(ttlInMilliseconds > 0) {

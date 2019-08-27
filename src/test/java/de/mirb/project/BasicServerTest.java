@@ -12,6 +12,7 @@ import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.commons.net.util.KeyManagerUtils;
 import org.apache.commons.net.util.TrustManagerUtils;
 import org.apache.ftpserver.ftplet.FtpException;
+import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.mina.filter.ssl.KeyStoreFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -331,13 +332,12 @@ public class BasicServerTest {
     assertTrue(client.makeDirectory(subDir));
     assertTrue(client.changeWorkingDirectory(subDir));
     assertTrue(client.changeWorkingDirectory("/"));
-    assertFalse(client.removeDirectory(subDir));
+    assertTrue(client.removeDirectory(subDir));
 
     client.disconnect();
   }
 
   @Test
-  @Ignore("implement")
   public void removeDirectory() throws Exception {
     FTPClient client = getVerifiedFtpClient();
     //
@@ -345,7 +345,7 @@ public class BasicServerTest {
     assertEquals(0, files.length);
     String testDirName = "testDir";
     boolean initResult = client.changeWorkingDirectory(testDirName);
-    System.out.println(client.printWorkingDirectory());
+//    System.out.println(client.printWorkingDirectory());
     assertFalse(initResult);
     boolean removed = client.removeDirectory(testDirName);
     assertFalse(removed);
@@ -363,7 +363,6 @@ public class BasicServerTest {
 
 
   @Test
-  @Ignore("First implement")
   public void removeDirectoryAndSubDirs() throws Exception {
     FTPClient client = createFtpClient();
     client.connect(hostname, serverPort);
@@ -380,6 +379,9 @@ public class BasicServerTest {
     assertTrue(client.changeWorkingDirectory(testDirName));
     files = client.listDirectories();
     assertEquals(0, files.length);
+
+    Stack<String> absolutePathnames = new Stack<>();
+    absolutePathnames.push("/" + testDirName);
     //
     for (int i = 0; i < 10; i++) {
       String pathname = testDirName + "-" + i;
@@ -390,9 +392,23 @@ public class BasicServerTest {
       assertTrue(client.changeWorkingDirectory(pathname));
       ftpFiles = client.listDirectories();
       assertEquals(0, ftpFiles.length);
+      String before = absolutePathnames.peek();
+      absolutePathnames.push(before + "/" + pathname);
     }
-    // delete
 
+//    System.out.println("#################\n" + pathnames);
+
+    client.changeWorkingDirectory("/");
+    // delete
+    while(!absolutePathnames.empty()) {
+      String pathToRemove = absolutePathnames.pop();
+//      System.out.println("Remove " + pathToRemove);
+      assertTrue(client.removeDirectory(pathToRemove));
+    }
+
+    client.changeWorkingDirectory("/");
+    files = client.listFiles();
+    assertEquals(0, files.length);
     //
     client.disconnect();
   }
