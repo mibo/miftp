@@ -31,6 +31,8 @@ class FtpProvider {
   var ttlInMilliseconds: Long = 0
   @Value("\${miftp.ftp.maxMemoryInBytes:0}")
   var maxMemoryInBytes: Long = 0
+  @Value("\${miftp.ftp.removeEmptyDirs:false}")
+  var removeEmptyDirs: Boolean = false
   @Value("\${miftp.ftp.cleanupInterval}")
   var cleanupInterval: Int = 10
   @Value("\${miftp.keystore.name:}")
@@ -62,6 +64,7 @@ class FtpProvider {
             .maxMemoryInBytes(maxMemoryInBytes)
             .ttlInMilliseconds(ttlInMilliseconds)
             .cleanUpInterval(cleanupInterval)
+            .removeEmptyDirs(removeEmptyDirs)
             .fileSystemListener(getFtpEventListener())
             .create()
 

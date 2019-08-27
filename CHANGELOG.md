@@ -18,6 +18,13 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
 ### Fixed
   * Fix deletion issue (workaround) for some strange FTP client
 
+## [0.7.2] - 2019-08-27
+### Added
+  * 8b9099c Added removal option for empty directories (default=false)
+
+### Fixed
+  * 00ee6ed Moved/changed clean up scheduler to work only on main FsView
+
 ## [0.7.1] - 2019-08-20
 ### Added
   * Added direct base url access (not only '/')

@@ -8,6 +8,7 @@ public class InMemoryFileSystemConfig implements FileSystemConfig {
   private long maxMemoryInBytes = 0;
   private long maxFiles = 0;
   private int cleanupInterval = 0;
+  private boolean removeEmptyDirs = false;
   /** default is an empty implementation */
   private FileSystemListener fileSystemListener = event -> {  };
 
@@ -30,6 +31,10 @@ public class InMemoryFileSystemConfig implements FileSystemConfig {
       config.cleanupInterval = cleanupInterval;
       return this;
     }
+    public Builder removeEmptyDirs(boolean removeEmptyDirs) {
+      config.removeEmptyDirs = removeEmptyDirs;
+      return this;
+    }
     public Builder fileSystemListener(FileSystemListener listener) {
       config.fileSystemListener = listener;
       return this;
@@ -48,6 +53,9 @@ public class InMemoryFileSystemConfig implements FileSystemConfig {
     return ttlInMilliseconds;
   }
 
+  public boolean isRemoveEmptyDirs() {
+    return removeEmptyDirs;
+  }
 
   public long getMaxMemoryInBytes() {
     return maxMemoryInBytes;
@@ -76,6 +84,7 @@ public class InMemoryFileSystemConfig implements FileSystemConfig {
         "ttlInMilliseconds=" + ttlInMilliseconds +
         ", maxMemoryInBytes=" + maxMemoryInBytes +
         ", maxFiles=" + maxFiles +
+        ", removeEmptyDirs=" + removeEmptyDirs +
         ", cleanupInterval=" + cleanupInterval +
         '}';
   }

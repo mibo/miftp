@@ -51,7 +51,6 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
 
   @Override
   public boolean forceDelete() {
-//    bout.reset();
     fsView.removePath(this);
     parentDir.removeChildPath(this);
     return true;
