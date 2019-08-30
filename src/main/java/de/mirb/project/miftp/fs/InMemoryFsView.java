@@ -46,8 +46,10 @@ public class InMemoryFsView implements FileSystemView {
     workingDir = homeDir;
 
     if(config.getCleanupInterval() > 0) {
+      // https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ScheduledExecutorService.html
+      //        #scheduleWithFixedDelay(java.lang.Runnable,%20long,%20long,%20java.util.concurrent.TimeUnit)
       cleanupScheduler = Executors.newSingleThreadScheduledExecutor()
-          .scheduleAtFixedRate(this::cleanUpFilesystem, 0, config.getCleanupInterval(), TimeUnit.SECONDS);
+          .scheduleWithFixedDelay(this::cleanUpFilesystem, 0, config.getCleanupInterval(), TimeUnit.SECONDS);
     }
   }
 
@@ -337,5 +339,4 @@ public class InMemoryFsView implements FileSystemView {
     LOG.debug("Found existing path for '{}' as '{}'.", name, absolutePath);
     return granted;
   }
-
 }

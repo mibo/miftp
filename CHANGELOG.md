@@ -16,7 +16,10 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
   * ...
 
 ### Fixed
-  * Fix deletion issue (workaround) for some strange FTP client
+
+## [0.7.3] - 2019-08-30
+### Fixed
+  * a3827de Changed scheduler from fixed rate to fixed dela
 
 ## [0.7.2] - 2019-08-27
 ### Added
@@ -24,6 +27,7 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
 
 ### Fixed
   * 00ee6ed Moved/changed clean up scheduler to work only on main FsView
+  * Fix deletion issue (workaround) for some strange FTP client
 
 ## [0.7.1] - 2019-08-20
 ### Added
