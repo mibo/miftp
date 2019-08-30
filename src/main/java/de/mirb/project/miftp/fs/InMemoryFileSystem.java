@@ -59,7 +59,8 @@ public class InMemoryFileSystem implements FileSystemFactory {
 
   @Override
   public FileSystemView createFileSystemView(User user) throws FtpException {
-//    LOG.info("Known user2views -> {}", user2View.toString());
+    LOG.info("Request FileSystemView for user {}", user.getName());
+    LOG.debug("Request FileSystemView was {}", (user2View.containsKey(user.getName())? "reused": "created"));
     return user2View.computeIfAbsent(user.getName(), (u) -> new InMemoryFsView(user, config));
   }
 }
