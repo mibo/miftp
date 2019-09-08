@@ -17,6 +17,10 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
 
 ### Fixed
 
+## [0.7.4] - 2019-09-08
+### Fixed
+  * 286c764 Fixed http client close handling
+
 ## [0.7.3] - 2019-08-30
 ### Fixed
   * a3827de Changed scheduler from fixed rate to fixed dela
