@@ -56,6 +56,7 @@ class SlackNotifier : FtpEventListener {
         body = message
       }
       println("Result $htmlContent")
+      client.close()
     }
   }
 

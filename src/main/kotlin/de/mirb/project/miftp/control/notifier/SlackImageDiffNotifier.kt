@@ -98,6 +98,7 @@ class SlackImageDiffNotifier : FtpEventListener {
         body = message
       }
       LOG.debug("POST response $htmlContent")
+      client.close()
     }
   }
 
