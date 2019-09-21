@@ -6,6 +6,7 @@ import de.mirb.project.miftp.control.notifier.SlackImageDiffNotifier
 import de.mirb.project.miftp.control.notifier.SlackNotifier
 import de.mirb.project.miftp.fs.InMemoryFileSystemConfig
 import de.mirb.project.miftp.fs.listener.FileSystemListener
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -35,6 +36,8 @@ class FtpProvider {
   var removeEmptyDirs: Boolean = false
   @Value("\${miftp.ftp.cleanupInterval}")
   var cleanupInterval: Int = 10
+  @Value("\${miftp.maxTokenFiles:10}")
+  var maxTokenFiles: Int = 10
   @Value("\${miftp.keystore.name:}")
   var keystoreName: String? = ""
   @Value("\${miftp.keystore.password:}")
@@ -52,7 +55,7 @@ class FtpProvider {
   }
 
   @Bean
-  fun server(): MiFtpServer {
+  fun server(ftpFileStore: FtpFileStore): MiFtpServer {
     if(username == null || password == null) {
       println("No user and/or password set. Fallback to default ('ftp/ftp')")
       username = "ftp"
@@ -65,7 +68,7 @@ class FtpProvider {
             .ttlInMilliseconds(ttlInMilliseconds)
             .cleanUpInterval(cleanupInterval)
             .removeEmptyDirs(removeEmptyDirs)
-            .fileSystemListener(getFtpEventListener())
+            .fileSystemListener(getFtpEventListener(ftpFileStore))
             .create()
 
     val keystoreFile =
@@ -87,13 +90,18 @@ class FtpProvider {
     return server
   }
 
+  @Bean
+  fun fileStore(): FtpFileStore {
+    return FtpFileStore(maxTokenFiles)
+  }
+
   fun getUsername() = username!!
 
-  private fun getFtpEventListener(): FileSystemListener {
+  private fun getFtpEventListener(fileStore: FtpFileStore): FileSystemListener {
     return when (eventListener) {
       "" -> FileSystemListener { }
-      "SlackNotifier" -> SlackNotifier().init(eventListenerParameters)
-      "SlackImageDiffNotifier" -> SlackImageDiffNotifier().init(eventListenerParameters)
+      "SlackNotifier" -> SlackNotifier().init(eventListenerParameters, fileStore)
+      "SlackImageDiffNotifier" -> SlackImageDiffNotifier().init(eventListenerParameters, fileStore)
       else -> handleMissingEventListener()
     }
   }

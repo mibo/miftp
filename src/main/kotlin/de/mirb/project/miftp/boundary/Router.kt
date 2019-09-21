@@ -55,6 +55,14 @@ class Router {
       return@GET fileById.map { file -> fileContent(file) }
                           .orElseGet { notFound().build() }
     }
+    // latest file
+    GET("/go/token/{token}") {
+      val content = it.queryParam("content").isPresent
+      val token = it.pathVariable("token")
+      return@GET handler.getFileByToken(token)
+              .map { file -> if(content) fileContent(file) else fileData(file) }
+              .orElseGet { notFound().build() }
+    }
   }
 
   private fun RouterFunctionDsl.fileContent(file: FileEndpoint) =

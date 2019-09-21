@@ -6,7 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 Planned changes/updates/fixes/features for to be part of one of the next _releases/versions_:
-  * Add feature to _FTP_ server to allow to keep _flagged_ images longer (to enable  `SlackImageDiffNotifier` to flag images) 
+  * Add feature to _FTP_ server to allow to keep _flagged_ files longer (to enable  `SlackImageDiffNotifier` to flag images) 
+  * Add feature to _Service_ to make files available (public web accessible) via a token (instead user user/pwd)
+  * Add feature to _Service_ to specify areas which are ignored for image diff
 
 ## [0.8.0-SNAPSHOT] - 2019-xx-xx
 ### Added

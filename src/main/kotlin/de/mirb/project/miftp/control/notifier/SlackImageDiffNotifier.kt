@@ -1,5 +1,6 @@
 package de.mirb.project.miftp.control.notifier
 
+import de.mirb.project.miftp.control.FtpFileStore
 import de.mirb.project.miftp.fs.InMemoryFtpFile
 import de.mirb.project.miftp.fs.listener.FileSystemEvent
 import de.mirb.project.miftp.image.ImageComparator
@@ -29,13 +30,16 @@ class SlackImageDiffNotifier : FtpEventListener {
   lateinit var serverBaseUrl: String
   var diffThreshold = PARA_DIFF_THRESHOLD_DEFAULT.toDouble()
   var diffIgnore = PARA_DIFF_IGNORE_THRESHOLD_DEFAULT.toDouble()
+  var ftpFileStore: FtpFileStore? = null
   var lastImage: FtpFile? = null
 
-  override fun init(parameters: Map<String, String>): FtpEventListener {
+  override fun init(parameters: Map<String, String>, ftpFileStore: FtpFileStore): FtpEventListener {
     url = getOrThrow(parameters, PARA_WEBHOOK_URL)
     serverBaseUrl = createServerBaseUrl(parameters)
     diffThreshold = readDiffThreshold(parameters)
     diffIgnore = readDiffIgnoreThreshold(parameters)
+
+    this.ftpFileStore = ftpFileStore
     return this
   }
 
@@ -58,18 +62,23 @@ class SlackImageDiffNotifier : FtpEventListener {
 
   override fun fileSystemChanged(event: FileSystemEvent) {
     if(event.type == FileSystemEvent.EventType.CREATED) {
-      if(isImage(event.file)) {
-        if(lastImage != null) {
-          compareFiles(lastImage!!, event.file).ifDifferentAndNotIgnored {
-            val jsonContent = createJsonPostContent(serverBaseUrl, event, it)
-            slackPost(jsonContent)
-          }
-        }
-        lastImage = event.file
-        if (lastImage is InMemoryFtpFile) {
-          (lastImage as InMemoryFtpFile).isLocked = true
-        }
+      if (isImage(event.file)) {
+        handleFileCreatedEvent(event)
       }
+    }
+  }
+
+  private fun handleFileCreatedEvent(event: FileSystemEvent) {
+    if (lastImage != null) {
+      compareFiles(lastImage!!, event.file).ifDifferentAndNotIgnored {
+        val token = ftpFileStore!!.enableTokenBasedAccess(it.second)
+        val jsonContent = createJsonPostContent(serverBaseUrl, event, it, token)
+        slackPost(jsonContent)
+      }
+    }
+    lastImage = event.file
+    if (lastImage is InMemoryFtpFile) {
+      (lastImage as InMemoryFtpFile).isLocked = true
     }
   }
 
@@ -102,7 +111,7 @@ class SlackImageDiffNotifier : FtpEventListener {
     }
   }
 
-  private fun createJsonPostContent(baseUrl: String, event: FileSystemEvent, diff: DiffResult) : String {
+  private fun createJsonPostContent(baseUrl: String, event: FileSystemEvent, diff: DiffResult, token: String) : String {
     val message = "(first=${diff.first.name} to second=${diff.second.name}): ${diff.diffValue} (${diff.isDifferent()})"
 
     return """
@@ -116,6 +125,11 @@ class SlackImageDiffNotifier : FtpEventListener {
             "title": "New image: ${diff.first.name}",
             "title_link": "$baseUrl/files/${diff.first.absolutePath}?content",
             "color": "#36a64f"
+        },
+        {
+            "title": "Token link for: ${diff.first.name}",
+            "title_link": "$baseUrl/go/token/${token}",
+            "image_url": "$baseUrl/go/token/${token}?content"
         },
         {
             "title": "Previous image: ${diff.second.name}",

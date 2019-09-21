@@ -45,6 +45,7 @@ class SecurityConfig {
   @Bean
   fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
     http.authorizeExchange()
+        .pathMatchers("/go/token/*").permitAll()
         .anyExchange().authenticated()
         .and().httpBasic()
 //        .and().formLogin()
