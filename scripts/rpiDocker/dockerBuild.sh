@@ -2,6 +2,7 @@
 
 HTTP_PORT=8081
 REPO_IMAGE=mibo/rpi-miftp
+PUSH=false
 
 if [[ -z $1 ]]; then
   echo "No version parameter given. Stop build."
@@ -12,7 +13,16 @@ else
   echo "Invalid version $1 parameter (format must be e.g. '1.2.3' (optional '-SNAPSHOT'))"
 #  echo "Found version $1"
 fi
-echo "Start with $VERSION"
+
+if [[ -z $2 ]]; then
+  echo "No second parameter given. Use default push=${PUSH}"
+elif [[ ${2} == "push" ]]; then
+  echo "Enable push after build."
+  PUSH=true
+fi
+
+echo "Start docker build for version $VERSION"
+echo
 
 if [[ ${VERSION} =~ .*-SNAPSHOT ]]; then
   # SNAPSHOT
@@ -29,3 +39,8 @@ echo "${CMD}"
 echo ""
 ${CMD}
 
+if [[ ${PUSH} == true ]]; then
+  echo "Push..."
+  docker push $REPO_IMAGE:latest
+  docker push $REPO_IMAGE:$VERSION
+fi
