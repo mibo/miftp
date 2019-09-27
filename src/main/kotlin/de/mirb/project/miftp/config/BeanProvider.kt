@@ -1,18 +1,23 @@
-package de.mirb.project.miftp.control
+package de.mirb.project.miftp.config
 
 import de.mirb.project.miftp.FtpServerConfig
 import de.mirb.project.miftp.MiFtpServer
+import de.mirb.project.miftp.control.FtpFileStore
 import de.mirb.project.miftp.control.notifier.SlackImageDiffNotifier
 import de.mirb.project.miftp.control.notifier.SlackNotifier
+import de.mirb.project.miftp.format.SizeFormatter
 import de.mirb.project.miftp.fs.InMemoryFileSystemConfig
 import de.mirb.project.miftp.fs.listener.FileSystemListener
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.CommandLineRunner
+import org.springframework.boot.info.BuildProperties
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 
 @Configuration
-class FtpProvider {
+class BeanProvider {
 
   @Value("\${miftp.ftp.user}")
   private var username: String? = null
@@ -95,6 +100,41 @@ class FtpProvider {
     return FtpFileStore(maxTokenFiles)
   }
 
+  @Bean("sizeFormatter")
+  fun sizeFormatter() = SizeFormatter()
+
+  @Bean("buildInfo")
+  fun buildInfo() = buildInfo
+  var buildInfo: BuildInfo = BuildInfo("<unset>", "<unset>")
+
+  @Bean
+  @Profile("!test")
+  fun init(context: ApplicationContext) = CommandLineRunner {
+
+    try {
+      val buildProperties = context.getBean(BuildProperties::class.java)
+      handleInfo(buildProperties)
+    } catch (e: Exception) {
+      // just ignore?
+      // workaround for https://youtrack.jetbrains.com/issue/IDEA-201587
+      println("got exception <" + e.message + ">")
+    }
+  }
+
+  //
+  // below only internal used methods (no bean provider methods)
+
+  private fun handleInfo(buildProperties: BuildProperties) {
+    println("build version is <" + buildProperties.version + ">")
+    println("build time is <" + buildProperties.time + ">")
+
+//    buildInfo = BuildInfo(buildProperties.version, buildProperties.time.toString())
+    buildInfo.version = buildProperties.version
+    buildInfo.timestamp = buildProperties.time.toString()
+//    println("value for custom key 'foo' is <" + buildProperties.get("foo") + ">")
+  }
+
+
   fun getUsername() = username!!
 
   private fun getFtpEventListener(fileStore: FtpFileStore): FileSystemListener {
@@ -107,7 +147,7 @@ class FtpProvider {
   }
 
   private fun handleMissingEventListener(): FileSystemListener {
-    if(failOnMissingEventListener) {
+    if (failOnMissingEventListener) {
       throw IllegalStateException("ERROR: Configured event listener $eventListener is not available.")
     }
     return FileSystemListener {

@@ -6,11 +6,6 @@ import kotlin.collections.HashMap
 
 class FtpFileStore(private val maxFileCount: Int) {
 
-  // perhaps all below should be moved in an own class
-  companion object {
-    val instance = FtpFileStore
-  }
-
   private val token2File = HashMap<String, FtpFile>()
   private val fileTokenQueue = LinkedList<String>() as Queue<String>
   /**

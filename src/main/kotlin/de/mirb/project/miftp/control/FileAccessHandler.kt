@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.nio.ByteBuffer
 import java.util.*
-import kotlin.collections.HashMap
 
 @Component
 class FileAccessHandler @Autowired constructor(private val server: MiFtpServer, private val fileStore: FtpFileStore) {

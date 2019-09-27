@@ -1,8 +1,8 @@
 package de.mirb.project.miftp.boundary
 
-import de.mirb.project.miftp.BuildInfo
+import de.mirb.project.miftp.config.BeanProvider
+import de.mirb.project.miftp.config.BuildInfo
 import de.mirb.project.miftp.control.FileAccessHandler
-import de.mirb.project.miftp.control.FtpProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -17,13 +17,13 @@ class Router {
   @Autowired
   lateinit var handler: FileAccessHandler
   @Autowired
-  lateinit var ftpProvider: FtpProvider
+  lateinit var beanProvider: BeanProvider
   @Autowired
   lateinit var buildInfo: BuildInfo
 
   @Bean
   fun route() = router {
-    val user = ftpProvider.getUsername()
+    val user = beanProvider.getUsername()
 
     // basic health state
     GET("/health") {

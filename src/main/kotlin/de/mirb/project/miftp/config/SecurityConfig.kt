@@ -1,4 +1,4 @@
-package de.mirb.project.miftp
+package de.mirb.project.miftp.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
