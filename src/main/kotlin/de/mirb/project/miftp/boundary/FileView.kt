@@ -1,7 +1,7 @@
 package de.mirb.project.miftp.boundary
 
-import de.mirb.project.miftp.control.FtpHandler
-import de.mirb.project.miftp.control.FtpProvider
+import de.mirb.project.miftp.config.BeanProvider
+import de.mirb.project.miftp.control.FileAccessHandler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Controller
@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.GetMapping
 class FileView {
 
   @Autowired
-  lateinit var handler: FtpHandler
+  lateinit var handler: FileAccessHandler
   @Autowired
-  lateinit var ftpProvider: FtpProvider
+  lateinit var beanProvider: BeanProvider
 
   @Value("\${server.path.prefix:}")
   private var pathPrefix: String? = null
@@ -22,7 +22,7 @@ class FileView {
 
   @GetMapping(value = [ "/", "" ])
   fun index(model: Model): String {
-    val user = ftpProvider.getUsername()
+    val user = beanProvider.getUsername()
     val files = handler.listFiles(user).sortedByDescending { it.lastModified }
     model.addAttribute("name", "sample")
     model.addAttribute("files", files)

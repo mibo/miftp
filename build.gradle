@@ -8,6 +8,7 @@ buildscript {
         slf4jVersion = '1.7.25'
         logbackVersion = '1.2.3'
 		ktorVersion = '1.2.3'
+		mockkVersion = '1.9'
 	}
 	repositories {
 		mavenCentral()
@@ -27,7 +28,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 group = 'de.mirb.project'
-version = '0.7.4'
+version = '0.8.0'
 sourceCompatibility = 1.8
 compileKotlin {
 	kotlinOptions {
@@ -71,4 +72,5 @@ dependencies {
 	testImplementation('io.projectreactor:reactor-test')
     testImplementation("commons-net:commons-net:${ftpClientVersion}")
     testImplementation("junit:junit:${junitVersion}")
+	testImplementation "io.mockk:mockk:${mockkVersion}"
 }

@@ -1,5 +1,6 @@
 package de.mirb.project.miftp.control.notifier
 
+import de.mirb.project.miftp.control.FtpFileStore
 import de.mirb.project.miftp.fs.listener.FileSystemEvent
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
@@ -16,7 +17,7 @@ class SlackNotifier : FtpEventListener {
   lateinit var filter: Set<FileSystemEvent.EventType>
   lateinit var serverBaseUrl: String
 
-  override fun init(parameters: Map<String, String>): FtpEventListener {
+  override fun init(parameters: Map<String, String>, ftpFileStore: FtpFileStore): FtpEventListener {
     url = getOrThrow(parameters, PARA_WEBHOOK_URL)
     serverBaseUrl = createServerBaseUrl(parameters)
     filter = createFilterSet(parameters)

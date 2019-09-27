@@ -9,7 +9,7 @@ import java.nio.ByteBuffer
 import java.util.*
 
 @Component
-class FtpHandler @Autowired constructor(private val server: MiFtpServer) {
+class FileAccessHandler @Autowired constructor(private val server: MiFtpServer, private val fileStore: FtpFileStore) {
 
   fun listFiles(user: String):List<FileEndpoint> {
     val view = server.getFileSystemView(user)
@@ -65,11 +65,13 @@ class FtpHandler @Autowired constructor(private val server: MiFtpServer) {
             .firstOrNull())
   }
 
+  fun getFileByToken(token: String): Optional<FileEndpoint> {
+    return fileStore.getFileByToken(token).map { FileEndpoint.create(it) }
+  }
+
   /**
    * Get current count of files (excluded directories)
    */
   fun getFilesCount(user: String) = listFiles(user).size
-
-//  fun list
 }
 

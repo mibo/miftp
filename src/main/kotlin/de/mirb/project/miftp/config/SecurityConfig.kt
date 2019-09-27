@@ -1,4 +1,4 @@
-package de.mirb.project.miftp
+package de.mirb.project.miftp.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -45,6 +45,7 @@ class SecurityConfig {
   @Bean
   fun springSecurityFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain {
     http.authorizeExchange()
+        .pathMatchers("/go/token/*").permitAll()
         .anyExchange().authenticated()
         .and().httpBasic()
 //        .and().formLogin()
