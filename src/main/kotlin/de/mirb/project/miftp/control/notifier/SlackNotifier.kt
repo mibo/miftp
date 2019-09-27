@@ -1,7 +1,6 @@
 package de.mirb.project.miftp.control.notifier
 
 import de.mirb.project.miftp.control.FtpFileStore
-import de.mirb.project.miftp.control.FtpHandler
 import de.mirb.project.miftp.fs.listener.FileSystemEvent
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post

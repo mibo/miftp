@@ -10,7 +10,7 @@ import java.util.*
 import kotlin.collections.HashMap
 
 @Component
-class FtpHandler @Autowired constructor(private val server: MiFtpServer, private val fileStore: FtpFileStore) {
+class FileAccessHandler @Autowired constructor(private val server: MiFtpServer, private val fileStore: FtpFileStore) {
 
   fun listFiles(user: String):List<FileEndpoint> {
     val view = server.getFileSystemView(user)
