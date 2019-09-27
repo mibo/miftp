@@ -3,12 +3,17 @@
 HTTP_PORT=8081
 REPO_IMAGE=mibo/miftp
 PUSH=false
+SNAPSHOT=false
 
 if [[ -z $1 ]]; then
   echo "No version parameter given. Stop build."
   exit 1
 elif [[ ${1} =~ ^([0-9]\.){2}[0-9](-SNAPSHOT)?$ ]]; then
   VERSION=$1
+  if [[ ${VERSION} =~ .*-SNAPSHOT ]]; then
+    SNAPSHOT=true
+    echo "Identified a SNAPSHOT for version $VERSION"
+  fi
 else
   echo "Invalid version $1 parameter (format must be e.g. '1.2.3' (optional '-SNAPSHOT'))"
 #  echo "Found version $1"
@@ -24,7 +29,7 @@ fi
 echo "Start docker build for version $VERSION"
 echo
 
-if [[ ${VERSION} =~ .*-SNAPSHOT ]]; then
+if [[ ${SNAPSHOT} ]]; then
   # SNAPSHOT
   echo "SNAPSHOT version"
   CMD="docker build --build-arg JAR_FILE=build/libs/miftp-${VERSION}.jar --build-arg HTTP_PORT=${HTTP_PORT} -t ${REPO_IMAGE}:sn -f ./Dockerfile ../.."
@@ -41,6 +46,10 @@ ${CMD}
 
 if [[ ${PUSH} == true ]]; then
   echo "Push..."
-  docker push $REPO_IMAGE:latest
-  docker push $REPO_IMAGE:$VERSION
+  if [[ ${SNAPSHOT} ]]; then
+    docker push $REPO_IMAGE:latest
+    docker push $REPO_IMAGE:$VERSION
+  else
+    docker push $REPO_IMAGE:sn
+  fi
 fi
