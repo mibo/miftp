@@ -1,7 +1,7 @@
 package de.mirb.project.miftp.boundary
 
-import de.mirb.project.miftp.control.FileAccessHandler
 import de.mirb.project.miftp.config.BeanProvider
+import de.mirb.project.miftp.control.FileAccessHandler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Controller

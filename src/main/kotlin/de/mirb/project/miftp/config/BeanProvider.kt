@@ -5,7 +5,6 @@ import de.mirb.project.miftp.MiFtpServer
 import de.mirb.project.miftp.control.FtpFileStore
 import de.mirb.project.miftp.control.notifier.SlackImageDiffNotifier
 import de.mirb.project.miftp.control.notifier.SlackNotifier
-import de.mirb.project.miftp.format.SizeFormatter
 import de.mirb.project.miftp.fs.InMemoryFileSystemConfig
 import de.mirb.project.miftp.fs.listener.FileSystemListener
 import org.springframework.beans.factory.annotation.Value

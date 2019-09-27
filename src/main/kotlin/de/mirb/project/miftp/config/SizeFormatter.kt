@@ -1,4 +1,4 @@
-package de.mirb.project.miftp.format
+package de.mirb.project.miftp.config
 
 import java.text.DecimalFormat
 
