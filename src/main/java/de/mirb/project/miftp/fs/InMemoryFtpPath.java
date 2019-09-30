@@ -15,13 +15,13 @@ import java.util.List;
 public class InMemoryFtpPath implements FtpFile {
 
   protected final InMemoryFtpDir parentDir;
-  protected final InMemoryFsView fsView;
+  protected final InMemoryFsViewContext fsView;
 
   protected final String name;
   protected final User user;
   protected long lastModified;
 
-  public InMemoryFtpPath(InMemoryFsView view, InMemoryFtpDir parentDir, String name) {
+  public InMemoryFtpPath(InMemoryFsViewContext view, InMemoryFtpDir parentDir, String name) {
     this.fsView = view;
     this.parentDir = parentDir;
     this.name = name;
@@ -101,7 +101,7 @@ public class InMemoryFtpPath implements FtpFile {
 
   @Override
   public boolean isRemovable() {
-    throw new IllegalStateException("Not supported on a Path instance.");
+    throw new IllegalStateException("isRemovable(): Not supported on a Path instance. Current path is " + getAbsolutePath());
   }
 
   @Override
@@ -178,7 +178,7 @@ public class InMemoryFtpPath implements FtpFile {
 
   @Override
   public InputStream createInputStream(long offset) throws IOException {
-    throw new IllegalStateException("Not supported on a Path instance.");
+    throw new IllegalStateException("createInputStream is not supported on a Path instance.");
   }
 
   @Override

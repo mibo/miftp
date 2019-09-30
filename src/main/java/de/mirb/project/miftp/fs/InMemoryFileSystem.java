@@ -7,9 +7,6 @@ import org.apache.ftpserver.ftplet.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * Created by mibo on 21.04.17.
  */
@@ -17,7 +14,6 @@ public class InMemoryFileSystem implements FileSystemFactory {
 
   private static final Logger LOG = LoggerFactory.getLogger(InMemoryFileSystem.class);
 
-  private final static Map<String, FileSystemView> user2View = new ConcurrentHashMap<>();
   private final InMemoryFileSystemConfig config;
 
   public static class Builder {
@@ -60,7 +56,8 @@ public class InMemoryFileSystem implements FileSystemFactory {
   @Override
   public FileSystemView createFileSystemView(User user) throws FtpException {
     LOG.info("Request FileSystemView for user {}", user.getName());
-    LOG.debug("Request FileSystemView was {}", (user2View.containsKey(user.getName())? "reused": "created"));
-    return user2View.computeIfAbsent(user.getName(), (u) -> new InMemoryFsView(user, config));
+//    LOG.debug("Request FileSystemView was {}", (user2View.containsKey(user.getName())? "reused": "created"));
+    return InMemoryFsView.createView(user, config);
+//    return user2View.computeIfAbsent(user.getName(), (u) -> InMemoryFsView.createView(user, config));
   }
 }
