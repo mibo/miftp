@@ -47,9 +47,9 @@ ${CMD}
 if [[ ${PUSH} == true ]]; then
   echo "Push..."
   if [[ ${SNAPSHOT} ]]; then
+    docker push $REPO_IMAGE:sn
+  else
     docker push $REPO_IMAGE:latest
     docker push $REPO_IMAGE:$VERSION
-  else
-    docker push $REPO_IMAGE:sn
   fi
 fi
