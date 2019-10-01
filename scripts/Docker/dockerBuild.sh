@@ -29,13 +29,13 @@ fi
 echo "Start docker build for version $VERSION"
 echo
 
-if [[ ${SNAPSHOT} ]]; then
+if [[ ${SNAPSHOT} == true ]]; then
   # SNAPSHOT
-  echo "SNAPSHOT version"
+  echo "Prepare for SNAPSHOT version"
   CMD="docker build --build-arg JAR_FILE=build/libs/miftp-${VERSION}.jar --build-arg HTTP_PORT=${HTTP_PORT} -t ${REPO_IMAGE}:sn -f ./Dockerfile ../.."
 else
-  echo "RELEASE version"
   #RELEASES
+  echo "Prepare for RELEASE version"
   CMD="docker build --build-arg JAR_FILE=build/libs/miftp-${VERSION}.jar --build-arg HTTP_PORT=${HTTP_PORT} -t ${REPO_IMAGE} -t ${REPO_IMAGE}:${VERSION} -f ./Dockerfile ../.."
 fi
 
@@ -46,7 +46,7 @@ ${CMD}
 
 if [[ ${PUSH} == true ]]; then
   echo "Push..."
-  if [[ ${SNAPSHOT} ]]; then
+  if [[ ${SNAPSHOT} == true ]]; then
     docker push $REPO_IMAGE:sn
   else
     docker push $REPO_IMAGE:latest
