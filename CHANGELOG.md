@@ -9,10 +9,14 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
   * Add feature to _FTP_ server to allow to keep _flagged_ files longer (to enable  `SlackImageDiffNotifier` to flag images) 
   * Add feature to _Service_ to specify areas which are ignored for image diff
 
+## [0.8.1] - 2019-10-01
+### Changed
+  * Changed image link and file count for health (see [PR](https://github.com/mibo/miftp/pull/14))
+
 ## [0.8.0] - 2019-09-27
 ### Added
-  * Add feature to _Service_ to make files available (public web accessible) via a token (instead user user/pwd)
-        * (https://github.com/mibo/miftp/pull/12)
+  * Add feature to _Service_ to make files available (public web accessible) via a token (instead user user/pwd) 
+    ([Pull request](https://github.com/mibo/miftp/pull/12)).
 
 ## [0.7.4] - 2019-09-08
 ### Fixed

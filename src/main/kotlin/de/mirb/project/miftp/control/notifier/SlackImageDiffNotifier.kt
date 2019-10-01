@@ -128,7 +128,7 @@ class SlackImageDiffNotifier : FtpEventListener {
         },
         {
             "title": "Token link for: ${diff.first.name}",
-            "title_link": "$baseUrl/go/token/${token}",
+            "title_link": "$baseUrl/go/token/${token}?content",
             "image_url": "$baseUrl/go/token/${token}?content"
         },
         {
