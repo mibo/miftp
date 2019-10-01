@@ -72,6 +72,6 @@ class FileAccessHandler @Autowired constructor(private val server: MiFtpServer, 
   /**
    * Get current count of files (excluded directories)
    */
-  fun getFilesCount(user: String) = listFiles(user).size
+  fun getFilesCount(user: String) = listFiles(user).size + fileStore.getFileCount()
 }
 

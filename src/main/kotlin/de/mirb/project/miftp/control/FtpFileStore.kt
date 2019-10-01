@@ -21,6 +21,8 @@ class FtpFileStore(private val maxFileCount: Int) {
     return token
   }
 
+  fun getFileCount() = fileTokenQueue.size
+
   fun getFileByToken(token: String) = Optional.ofNullable(token2File[token])
 
   fun removeTokenBasedAccess(token: String) {
