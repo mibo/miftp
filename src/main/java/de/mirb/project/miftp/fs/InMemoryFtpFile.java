@@ -18,7 +18,7 @@ public class InMemoryFtpFile extends InMemoryFtpPath {
   private InMemoryByteArrayOutputStream bout = new InMemoryByteArrayOutputStream(this);
   private boolean locked;
 
-  public InMemoryFtpFile(InMemoryFsView view, InMemoryFtpDir parentDir, String name) {
+  public InMemoryFtpFile(InMemoryFsViewContext view, InMemoryFtpDir parentDir, String name) {
     super(view, parentDir, name);
   }
 

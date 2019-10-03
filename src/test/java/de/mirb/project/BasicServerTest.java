@@ -80,6 +80,13 @@ public class BasicServerTest {
     server.start();
   }
 
+  @After
+  public void stop() {
+    if(server != null) {
+      server.stop();
+    }
+  }
+
   private final FileSystemListener listener = event -> {
     user2event.compute(event.getUser().getName(), (key, value) -> {
       if(value == null) {

@@ -20,11 +20,11 @@ public class InMemoryFtpDir extends InMemoryFtpPath {
   private final Map<String, InMemoryFtpPath> name2ChildFtpPath = Collections.synchronizedSortedMap(new TreeMap<>());
   private final InMemoryFileSystemConfig config;
 
-  public InMemoryFtpDir(InMemoryFsView view, String name) {
+  public InMemoryFtpDir(InMemoryFsViewContext view, String name) {
     this(view, null, name);
   }
 
-  public InMemoryFtpDir(InMemoryFsView view, InMemoryFtpDir parentDir, String name) {
+  public InMemoryFtpDir(InMemoryFsViewContext view, InMemoryFtpDir parentDir, String name) {
     super(view, parentDir, name);
     this.config = view.getConfig();
   }

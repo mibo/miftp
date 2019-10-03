@@ -57,6 +57,9 @@ public class MiFtpServer {
   public void stop() {
     if(server != null && !server.isStopped()) {
       server.stop();
+      // TODO: verify
+      fileSystemFactory = null;
+//      grantFileSystem().createFileSystemView(user).dispose();
     }
   }
 
@@ -103,7 +106,7 @@ public class MiFtpServer {
     try {
       BaseUser user = new BaseUser();
       user.setName(username);
-      return fileSystemFactory.createFileSystemView(user);
+      return grantFileSystem().createFileSystemView(user);
     } catch (FtpException e) {
       System.out.println("Ex: " + e.getMessage());
       // FIXME: re think exception
