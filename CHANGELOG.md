@@ -9,7 +9,7 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
   * Add feature to _FTP_ server to allow to keep _flagged_ files longer (to enable  `SlackImageDiffNotifier` to flag images) 
   * Add feature to _Service_ to specify areas which are ignored for image diff
 
-## [0.8.2] - 2019-10-xx (unreleased)
+## [0.8.2] - 2019-10-03
 ### Fixed
   * Refactored FTP View/Context to fix issues when one user is connected more then once 
     (see [PR](https://github.com/mibo/miftp/pull/14)). Before this leads to strange behaviour related to current work dir.
