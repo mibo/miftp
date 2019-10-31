@@ -12,6 +12,10 @@ import kotlin.math.sqrt
  */
 class ImageComparator(val sensibility: Double = 0.1) {
 
+  data class ImageSelector(val p1x: Double = 0.0, val p1y: Double = 1.0,
+                           val p2x: Double = 0.0, val p2y: Double = 0.0,
+                           val p3x: Double = 1.0, val p3y: Double = 0.0,
+                           val p4x: Double = 1.0, val p4y: Double = 1.0)
 
   /**
    * Compare how equal both images are. The result is a value between 0 and 1.0
@@ -21,12 +25,13 @@ class ImageComparator(val sensibility: Double = 0.1) {
    * @param secondImage
    * @return comparision how equal both images are as percentage (0.0=0% to 1.0=100%)
    */
-  fun compare(firstImage: InputStream, secondImage: InputStream): Double {
+  fun compare(firstImage: InputStream, secondImage: InputStream,
+              selector: ImageSelector = ImageSelector()): Double {
 
     val imageOne = ImageIO.read(firstImage)
     val imageTwo = ImageIO.read(secondImage)
 
-    val matrix = populateTheMatrixOfTheDifferences(imageOne, imageTwo)
+    val matrix = populateTheMatrixOfTheDifferences(imageOne, imageTwo, selector)
     return percentageOfZeros(matrix)
   }
 
@@ -48,7 +53,8 @@ class ImageComparator(val sensibility: Double = 0.1) {
    * @param secondImage [BufferedImage] object of the second image.
    * @return populated binary matrix.
    */
-  private fun populateTheMatrixOfTheDifferences(firstImage: BufferedImage, secondImage: BufferedImage): Array<IntArray> {
+  private fun populateTheMatrixOfTheDifferences(firstImage: BufferedImage, secondImage: BufferedImage,
+                                                selector: ImageSelector): Array<IntArray> {
     val heightDiff = firstImage.height != secondImage.height
     val widthDiff = firstImage.width != secondImage.width
 
@@ -64,8 +70,13 @@ class ImageComparator(val sensibility: Double = 0.1) {
     }
 
     val matrix = Array(firstImageCompare.width) { IntArray(firstImageCompare.height) }
-    for (y in 0 until firstImageCompare.height) {
-      for (x in 0 until firstImageCompare.width) {
+    val startHeight = (selector.p2y * firstImageCompare.height).toInt()
+    val endHeight = (selector.p1y * firstImageCompare.height).toInt()
+    val startWidth = (selector.p2x * firstImageCompare.width).toInt()
+    val endWidth = (selector.p3x * firstImageCompare.width).toInt()
+
+    for (y in startHeight until endHeight) {
+      for (x in startWidth until endWidth) {
         matrix[x][y] = if (isDifferent(firstImageCompare.getRGB(x, y), secondImageCompare.getRGB(x, y))) 1 else 0
       }
     }

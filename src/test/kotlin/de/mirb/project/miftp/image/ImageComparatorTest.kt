@@ -104,6 +104,19 @@ class ImageComparatorTest {
   }
 
   @Test
+  fun slightlyDifferentImages() {
+    val compare = ImageComparator()
+    val firstImage = loadImageResource("images/image_three.jpg")
+    val secondImage = loadImageResource("images/image_four.jpg")
+
+    val selector = ImageComparator.ImageSelector(p3x = 0.5)
+    val result = compare.compare(firstImage, secondImage, selector)
+
+    Assert.assertEquals(1.0, result, 0.0)
+    Assert.assertNotNull(result)
+  }
+
+  @Test
   fun differentImagesDifferentSize() {
     val compare = ImageComparator()
     val firstImage = loadImageResource("images/image_one.jpg")
