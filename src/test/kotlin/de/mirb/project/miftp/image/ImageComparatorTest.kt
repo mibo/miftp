@@ -109,10 +109,23 @@ class ImageComparatorTest {
     val firstImage = loadImageResource("images/image_three.jpg")
     val secondImage = loadImageResource("images/image_four.jpg")
 
-    val selector = ImageComparator.ImageSelector(p3x = 0.5)
+    val selector = ImageComparator.ImageSelectorRectangle(p2x = 0.5)
     val result = compare.compare(firstImage, secondImage, selector)
 
     Assert.assertEquals(1.0, result, 0.0)
+    Assert.assertNotNull(result)
+  }
+
+  @Test
+  fun slightlyDifferentImagesPartlySelected() {
+    val compare = ImageComparator()
+    val firstImage = loadImageResource("images/image_three.jpg")
+    val secondImage = loadImageResource("images/image_four.jpg")
+
+    val selector = ImageComparator.ImageSelectorRectangle(p2x = 0.9)
+    val result = compare.compare(firstImage, secondImage, selector)
+
+    Assert.assertEquals(0.9588252314814815, result, 0.0)
     Assert.assertNotNull(result)
   }
 
