@@ -15,7 +15,12 @@ class ImageComparator(val sensibility: Double = 0.1) {
   data class ImageSelector(val p1x: Double = 0.0, val p1y: Double = 1.0,
                            val p2x: Double = 0.0, val p2y: Double = 0.0,
                            val p3x: Double = 1.0, val p3y: Double = 0.0,
-                           val p4x: Double = 1.0, val p4y: Double = 1.0)
+                           val p4x: Double = 1.0, val p4y: Double = 1.0) {
+
+    fun verify(): Boolean {
+      return p1x <= p4x && p2x <= p3x && p1y >= p2y && p3y <= p4y
+    }
+  }
 
   data class ImageSelectorRectangle(val p1x: Double = 0.0, val p1y: Double = 0.0,
                            val p2x: Double = 1.0, val p2y: Double = 1.0)
@@ -48,6 +53,8 @@ class ImageComparator(val sensibility: Double = 0.1) {
    */
   fun compare(firstImage: InputStream, secondImage: InputStream,
               selector: ImageSelector): Double {
+
+    require(selector.verify()) { "Select $selector with invalid values" }
 
     val imageOne = ImageIO.read(firstImage)
     val imageTwo = ImageIO.read(secondImage)
@@ -106,13 +113,45 @@ class ImageComparator(val sensibility: Double = 0.1) {
     }
 
     val matrix = Array(firstImageCompare.width) { IntArray(firstImageCompare.height) }
-    val startHeight = (selector.p1y * firstImageCompare.height).toInt()
-    val endHeight = (selector.p2y * firstImageCompare.height).toInt()
-    val startWidth = (selector.p1x * firstImageCompare.width).toInt()
-    val endWidth = (selector.p2x * firstImageCompare.width).toInt()
+//    val startHeight = (selector.p1y * firstImageCompare.height).toInt()
+//    val endHeight = (selector.p2y * firstImageCompare.height).toInt()
+    val minWidth = (selector.p1x.coerceAtMost(selector.p2x) * firstImageCompare.width).toInt()
+    val maxWidth = (selector.p3x.coerceAtLeast(selector.p4x) * firstImageCompare.width).toInt()
 
-    for (y in startHeight until endHeight) {
-      for (x in startWidth until endWidth) {
+    val funP12 = createLinearFunction(
+            selector.p1x * firstImageCompare.width,
+            selector.p1y * firstImageCompare.height,
+            selector.p2x * firstImageCompare.width,
+            selector.p2y * firstImageCompare.height)
+    val funP23 = createLinearFunction(
+            selector.p2x * firstImageCompare.width,
+            selector.p2y * firstImageCompare.height,
+            selector.p3x * firstImageCompare.width,
+            selector.p3y * firstImageCompare.height)
+    val funP14 = createLinearFunction(
+            selector.p1x * firstImageCompare.width,
+            selector.p1y * firstImageCompare.height,
+            selector.p4x * firstImageCompare.width,
+            selector.p4y * firstImageCompare.height)
+    val funP34 = createLinearFunction(
+            selector.p3x * firstImageCompare.width,
+            selector.p3y * firstImageCompare.height,
+            selector.p4x * firstImageCompare.width,
+            selector.p4y * firstImageCompare.height)
+
+
+    val p1xmax = selector.p1x * firstImageCompare.width
+    val p4xmax = selector.p4x * firstImageCompare.width
+    for (x in minWidth until maxWidth) {
+      val startHeight = funP23.calculateY(x).toInt()
+      val endHeight = when {
+        x < p1xmax -> funP12.calculateY(x)
+        x < p4xmax -> funP14.calculateY(x)
+        else -> funP34.calculateY(x)
+      }.toInt()
+      print("\nx:$x ($startHeight/$endHeight) => ")
+      for (y in startHeight until endHeight) {
+        print("$y,")
         matrix[x][y] = if (isDifferent(firstImageCompare.getRGB(x, y), secondImageCompare.getRGB(x, y))) 1 else 0
       }
     }
@@ -120,7 +159,7 @@ class ImageComparator(val sensibility: Double = 0.1) {
   }
 
   // f(x) = m * x + n = y | p (x,y)
-  fun createLinearFunction(p1x: Int, p1y: Int, p2x: Int, p2y:Int): LinerFunction {
+  fun createLinearFunction(p1x: Double, p1y: Double, p2x: Double, p2y:Double): LinerFunction {
 
 //    val p1m = p1x * p2x * -1
     val p1n = p2x * -1
@@ -131,7 +170,7 @@ class ImageComparator(val sensibility: Double = 0.1) {
     //
     val pnn = p1n + p2n
     val pyy = p1yy + p2yy
-    val n = pyy / pnn.toDouble()
+    val n = pyy / pnn
     // next
     //  x * m + n = y
     // => m = (y-n) / x

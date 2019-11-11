@@ -3,6 +3,7 @@ package de.mirb.project.miftp.image
 import org.junit.Assert
 import org.junit.Ignore
 import org.junit.Test
+import org.junit.jupiter.api.assertThrows
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.InputStream
@@ -94,7 +95,7 @@ class ImageComparatorTest {
   @Test
   fun mathStuff() {
     val compare = ImageComparator()
-    val function = compare.createLinearFunction(140, 30, 200,70)
+    val function = compare.createLinearFunction(140.0, 30.0, 200.0, 70.0)
     val x = 160
     println("f($x) = " + function.calculateY(x).toInt())
     val x1 = 140
@@ -105,6 +106,19 @@ class ImageComparatorTest {
     Assert.assertEquals(30, function.calculateY(140).toInt())
     Assert.assertEquals(70, function.calculateY(200).toInt())
   }
+
+  @Test
+  fun verifyInvalidSelector() {
+    val compare = ImageComparator()
+    val firstImage = loadImageResource("images/image_one.jpg")
+    val secondImage = loadImageResource("images/image_two.jpg")
+
+    assertThrows<java.lang.IllegalArgumentException> {
+      compare.compare(firstImage, secondImage, ImageComparator.ImageSelector(p1x = 0.7, p4x = 0.2)) }
+    assertThrows<java.lang.IllegalArgumentException> {
+      compare.compare(firstImage, secondImage, ImageComparator.ImageSelector(p1y = 0.1, p2y = 0.2)) }
+  }
+
 
   @Test
   fun differentImages() {
@@ -124,6 +138,44 @@ class ImageComparatorTest {
     val firstImage = loadImageResource("images/image_three.jpg")
     val secondImage = loadImageResource("images/image_four.jpg")
 
+    val selector = ImageComparator.ImageSelector(p3x = 0.5, p4x = 0.5)
+    val result = compare.compare(firstImage, secondImage, selector)
+
+    Assert.assertEquals(1.0, result, 0.0)
+    Assert.assertNotNull(result)
+  }
+
+  @Test
+  fun slightlyDifferentImagesTriangle() {
+    val compare = ImageComparator()
+    val firstImage = loadImageResource("images/image_three.jpg")
+    val secondImage = loadImageResource("images/image_four.jpg")
+
+    val selector = ImageComparator.ImageSelector(p4x = 0.5, p4y = 0.7, p3y = 0.5)
+    val result = compare.compare(firstImage, secondImage, selector)
+
+    Assert.assertEquals(1.0, result, 0.0)
+    Assert.assertNotNull(result)
+  }
+
+  @Test
+  fun slightlyDifferentImagesOnlyDiffSelected() {
+    val compare = ImageComparator()
+    val firstImage = loadImageResource("images/image_three.jpg")
+    val secondImage = loadImageResource("images/image_four.jpg")
+
+    val selector = ImageComparator.ImageSelector(p1x = 0.7, p2x = 1.0, p2y = 0.5, p3y = 0.5)
+    val result = compare.compare(firstImage, secondImage, selector)
+
+    Assert.assertEquals(0.9549479166666667, result, 0.0)
+    Assert.assertNotNull(result)
+  }
+  @Test
+  fun slightlyDifferentImagesHalfSelected() {
+    val compare = ImageComparator()
+    val firstImage = loadImageResource("images/image_three.jpg")
+    val secondImage = loadImageResource("images/image_four.jpg")
+
     val selector = ImageComparator.ImageSelectorRectangle(p2x = 0.5)
     val result = compare.compare(firstImage, secondImage, selector)
 
@@ -132,7 +184,7 @@ class ImageComparatorTest {
   }
 
   @Test
-  fun slightlyDifferentImagesPartlySelected() {
+  fun slightlyDifferentImagesPartlySelectedWithDiff() {
     val compare = ImageComparator()
     val firstImage = loadImageResource("images/image_three.jpg")
     val secondImage = loadImageResource("images/image_four.jpg")
