@@ -89,7 +89,22 @@ class ImageComparatorTest {
 //
 //    } while (true)
 //    println(String.format(namePattern, 1))
- }
+  }
+
+  @Test
+  fun mathStuff() {
+    val compare = ImageComparator()
+    val function = compare.createLinearFunction(140, 30, 200,70)
+    val x = 160
+    println("f($x) = " + function.calculateY(x).toInt())
+    val x1 = 140
+    println("f($x1) = " + function.calculateY(x1).toInt())
+    val x2 = 200
+    println("f($x2) = " + function.calculateY(x2).toInt())
+    Assert.assertEquals(43, function.calculateY(160).toInt())
+    Assert.assertEquals(30, function.calculateY(140).toInt())
+    Assert.assertEquals(70, function.calculateY(200).toInt())
+  }
 
   @Test
   fun differentImages() {
