@@ -170,6 +170,7 @@ class ImageComparatorTest {
     Assert.assertEquals(0.9549479166666667, result, 0.0)
     Assert.assertNotNull(result)
   }
+
   @Test
   fun slightlyDifferentImagesHalfSelected() {
     val compare = ImageComparator()

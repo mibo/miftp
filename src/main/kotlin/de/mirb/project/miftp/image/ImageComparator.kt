@@ -8,10 +8,26 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 /**
- * @param sensibility The default is the difference between two pixels need to be more then 10% (=> `0.1`).
+ * @param sensibility The default is the difference between two pixels need to be more than 10% (=> `0.1`).
  */
 class ImageComparator(val sensibility: Double = 0.1) {
 
+  /**
+   * ```
+   * p1x,p1y --------------------- p4x,p4y
+   * |                                   |
+   * |                                   |
+   * |                                   |
+   * |                                   |
+   * |                                   |
+   * p2x,p2y --------------------- p3x,p3y
+   * ```
+   * Default values are: p1x: 0; p1y: 1
+   * Default values are: p2x: 0; p2y: 0
+   * Default values are: p3x: 1; p3y: 0
+   * Default values are: p4x: 1; p4y: 1
+   */
+  @Suppress("GrazieInspection")
   data class ImageSelector(val p1x: Double = 0.0, val p1y: Double = 1.0,
                            val p2x: Double = 0.0, val p2y: Double = 0.0,
                            val p3x: Double = 1.0, val p3y: Double = 0.0,
@@ -22,6 +38,22 @@ class ImageComparator(val sensibility: Double = 0.1) {
     }
   }
 
+  /**
+   * ```
+   * ----------------------------- p2x,p2y
+   * |                                   |
+   * |                                   |
+   * |                                   |
+   * |                                   |
+   * |                                   |
+   * p1x,p1y -----------------------------
+   * ```
+   * @param p1x
+   * @param p1y
+   * @param p2x
+   * @param p2y
+   */
+  @Suppress("GrazieInspection")
   data class ImageSelectorRectangle(val p1x: Double = 0.0, val p1y: Double = 0.0,
                            val p2x: Double = 1.0, val p2y: Double = 1.0)
 
@@ -142,45 +174,48 @@ class ImageComparator(val sensibility: Double = 0.1) {
 
     val p1xmax = selector.p1x * firstImageCompare.width
     val p4xmax = selector.p4x * firstImageCompare.width
+    println("Compare x from $minWidth->$maxWidth with p1max: $p1xmax; p4max: $p4xmax")
     for (x in minWidth until maxWidth) {
       val startHeight = funP23.calculateY(x).toInt()
+      println("funP12: " + (x < p1xmax) + "; funP14: " + (x < p4xmax) + " else funP34")
       val endHeight = when {
         x < p1xmax -> funP12.calculateY(x)
         x < p4xmax -> funP14.calculateY(x)
         else -> funP34.calculateY(x)
       }.toInt()
-      print("\nx:$x ($startHeight/$endHeight) => ")
+      print("\nx:$x (y:$startHeight->$endHeight) => ")
       for (y in startHeight until endHeight) {
-        print("$y,")
+//        print("$y,")
         matrix[x][y] = if (isDifferent(firstImageCompare.getRGB(x, y), secondImageCompare.getRGB(x, y))) 1 else 0
+        print(matrix[x][y].toString() + ",")
       }
     }
     return matrix
   }
 
   // f(x) = m * x + n = y | p (x,y)
-  fun createLinearFunction(p1x: Double, p1y: Double, p2x: Double, p2y:Double): LinerFunction {
+  fun createLinearFunction(p1x: Double, p1y: Double, p2x: Double, p2y:Double): LinearFunction {
 
-//    val p1m = p1x * p2x * -1
-    val p1n = p2x * -1
-    val p1yy = p1y * p2x * -1
-//    val p2m = p1x * p2x
-    val p2n = p1x
-    val p2yy = p2y * p1x
-    //
-    val pnn = p1n + p2n
-    val pyy = p1yy + p2yy
-    val n = pyy / pnn
-    // next
-    //  x * m + n = y
-    // => m = (y-n) / x
-    val pm = (p1y - n) / p1x
+//    if (p1x == p2x) {
+//
+//    }
+//    val m = (p1y - p2y) / (p1x - p2x)
 
-    return LinerFunction(pm, n)
+    // m =
+    val m: Double =
+            if (p1x == p2x) 0.0 else (p1y - p2y) / (p1x - p2x)
+    // n = y2 - m * x1
+    val n = p2y - m * p1x
+
+    return LinearFunction(m, n)
   }
 
-  class LinerFunction(private val m: Double, private val n: Double) {
-    fun calculateY(x: Int): Double = m * x + n
+  class LinearFunction(private val m: Double, private val n: Double) {
+//    fun calculateY(x: Int): Double = m * x + n
+    fun calculateY(x: Int): Double {
+      println("Calculate with '$m * $x + $n'")
+      return m * x + n
+    }
   }
 
   /**
