@@ -104,7 +104,22 @@ class ImageComparatorTest {
     println("f($x2) = " + function.calculateY(x2).toInt())
     Assert.assertEquals(43, function.calculateY(160).toInt())
     Assert.assertEquals(30, function.calculateY(140).toInt())
-    Assert.assertEquals(70, function.calculateY(200).toInt())
+    Assert.assertEquals(69, function.calculateY(200).toInt())
+  }
+
+  @Test
+  fun mathStuffBasic() {
+    val compare = ImageComparator()
+    val function = compare.createLinearFunction(20.0, 20.0, 60.0, 60.0)
+    val x = 160
+    println("f($x) = " + function.calculateY(x).toInt())
+    val x1 = 140
+    println("f($x1) = " + function.calculateY(x1).toInt())
+    val x2 = 200
+    println("f($x2) = " + function.calculateY(x2).toInt())
+    Assert.assertEquals(160, function.calculateY(160).toInt())
+    Assert.assertEquals(140, function.calculateY(140).toInt())
+    Assert.assertEquals(200, function.calculateY(200).toInt())
   }
 
   @Test
@@ -167,7 +182,7 @@ class ImageComparatorTest {
     val selector = ImageComparator.ImageSelector(p1x = 0.7, p2x = 1.0, p2y = 0.5, p3y = 0.5)
     val result = compare.compare(firstImage, secondImage, selector)
 
-    Assert.assertEquals(0.9549479166666667, result, 0.0)
+    Assert.assertEquals(0.95484375, result, 0.0)
     Assert.assertNotNull(result)
   }
 
@@ -193,7 +208,7 @@ class ImageComparatorTest {
     val selector = ImageComparator.ImageSelectorRectangle(p2x = 0.9)
     val result = compare.compare(firstImage, secondImage, selector)
 
-    Assert.assertEquals(0.9588252314814815, result, 0.0)
+    Assert.assertEquals(0.9587094907407407, result, 0.0)
     Assert.assertNotNull(result)
   }
 

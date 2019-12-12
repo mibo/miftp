@@ -145,8 +145,6 @@ class ImageComparator(val sensibility: Double = 0.1) {
     }
 
     val matrix = Array(firstImageCompare.width) { IntArray(firstImageCompare.height) }
-//    val startHeight = (selector.p1y * firstImageCompare.height).toInt()
-//    val endHeight = (selector.p2y * firstImageCompare.height).toInt()
     val minWidth = (selector.p1x.coerceAtMost(selector.p2x) * firstImageCompare.width).toInt()
     val maxWidth = (selector.p3x.coerceAtLeast(selector.p4x) * firstImageCompare.width).toInt()
 
@@ -174,20 +172,19 @@ class ImageComparator(val sensibility: Double = 0.1) {
 
     val p1xmax = selector.p1x * firstImageCompare.width
     val p4xmax = selector.p4x * firstImageCompare.width
-    println("Compare x from $minWidth->$maxWidth with p1max: $p1xmax; p4max: $p4xmax")
+//    println("Compare x from $minWidth->$maxWidth with p1max: $p1xmax; p4max: $p4xmax")
     for (x in minWidth until maxWidth) {
-      val startHeight = funP23.calculateY(x).toInt()
-      println("funP12: " + (x < p1xmax) + "; funP14: " + (x < p4xmax) + " else funP34")
-      val endHeight = when {
+      val endHeight = firstImageCompare.height - funP23.calculateY(x).toInt()
+//      println("funP12: " + (x < p1xmax) + "; funP14: " + (x < p4xmax) + " else funP34")
+      val startHeight = firstImageCompare.height - when {
         x < p1xmax -> funP12.calculateY(x)
         x < p4xmax -> funP14.calculateY(x)
         else -> funP34.calculateY(x)
       }.toInt()
-      print("\nx:$x (y:$startHeight->$endHeight) => ")
+//      print("\nx:$x (y:$startHeight->$endHeight) => ")
       for (y in startHeight until endHeight) {
-//        print("$y,")
         matrix[x][y] = if (isDifferent(firstImageCompare.getRGB(x, y), secondImageCompare.getRGB(x, y))) 1 else 0
-        print(matrix[x][y].toString() + ",")
+//        print(matrix[x][y].toString() + ",")
       }
     }
     return matrix
@@ -196,16 +193,11 @@ class ImageComparator(val sensibility: Double = 0.1) {
   // f(x) = m * x + n = y | p (x,y)
   fun createLinearFunction(p1x: Double, p1y: Double, p2x: Double, p2y:Double): LinearFunction {
 
-//    if (p1x == p2x) {
-//
-//    }
-//    val m = (p1y - p2y) / (p1x - p2x)
-
-    // m =
+    // m = (y2 - y1) / (x2 - x1)
     val m: Double =
-            if (p1x == p2x) 0.0 else (p1y - p2y) / (p1x - p2x)
-    // n = y2 - m * x1
-    val n = p2y - m * p1x
+            if (p1x == p2x) 0.0 else (p2y - p1y) / (p2x - p1x)
+    // n = y1 - m * x1
+    val n = p1y - m * p1x
 
     return LinearFunction(m, n)
   }
@@ -213,7 +205,7 @@ class ImageComparator(val sensibility: Double = 0.1) {
   class LinearFunction(private val m: Double, private val n: Double) {
 //    fun calculateY(x: Int): Double = m * x + n
     fun calculateY(x: Int): Double {
-      println("Calculate with '$m * $x + $n'")
+//      println("Calculate with '$m * $x + $n'")
       return m * x + n
     }
   }
