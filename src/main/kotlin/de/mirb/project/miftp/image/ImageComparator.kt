@@ -12,6 +12,8 @@ import kotlin.math.sqrt
  */
 class ImageComparator(val sensibility: Double = 0.1) {
 
+  private data class CompareableImages(val first: BufferedImage, val second: BufferedImage)
+
   /**
    * ```
    * p1x,p1y --------------------- p4x,p4y
@@ -48,10 +50,10 @@ class ImageComparator(val sensibility: Double = 0.1) {
    * |                                   |
    * p1x,p1y -----------------------------
    * ```
-   * @param p1x
-   * @param p1y
-   * @param p2x
-   * @param p2y
+   * @param p1x default 0.0
+   * @param p1y default 0.0
+   * @param p2x default 1.0
+   * @param p2y default 1.0
    */
   @Suppress("GrazieInspection")
   data class ImageSelectorRectangle(val p1x: Double = 0.0, val p1y: Double = 0.0,
@@ -120,7 +122,6 @@ class ImageComparator(val sensibility: Double = 0.1) {
     return if (zeros == 0) 0.0 else (zeros.div(all.toDouble()))
   }
 
-
   /**
    * Populate binary matrix by "0" and "1". If the pixels are difference set it as "1", otherwise "0".
    *
@@ -130,19 +131,7 @@ class ImageComparator(val sensibility: Double = 0.1) {
    */
   private fun populateTheMatrixOfTheDifferences(firstImage: BufferedImage, secondImage: BufferedImage,
                                                 selector: ImageSelector): Array<IntArray> {
-    val heightDiff = firstImage.height != secondImage.height
-    val widthDiff = firstImage.width != secondImage.width
-
-    var firstImageCompare = firstImage
-    var secondImageCompare = secondImage
-    if(heightDiff || widthDiff) {
-      // TODO: ...
-      if(firstImage.height > secondImage.height) {
-        secondImageCompare = resize(secondImage, firstImage.height, firstImage.width)
-      } else {
-        firstImageCompare = resize(firstImage, secondImage.height, secondImage.width)
-      }
-    }
+    val (firstImageCompare, secondImageCompare) = convertToComparable(firstImage, secondImage)
 
     val matrix = Array(firstImageCompare.width) { IntArray(firstImageCompare.height) }
     val minWidth = (selector.p1x.coerceAtMost(selector.p2x) * firstImageCompare.width).toInt()
@@ -190,6 +179,23 @@ class ImageComparator(val sensibility: Double = 0.1) {
     return matrix
   }
 
+  private fun convertToComparable(firstImage: BufferedImage, secondImage: BufferedImage): CompareableImages {
+    val heightDiff = firstImage.height != secondImage.height
+    val widthDiff = firstImage.width != secondImage.width
+
+    var firstImageCompare = firstImage
+    var secondImageCompare = secondImage
+    if (heightDiff || widthDiff) {
+      // TODO: ...
+      if (firstImage.height > secondImage.height) {
+        secondImageCompare = resize(secondImage, firstImage.height, firstImage.width)
+      } else {
+        firstImageCompare = resize(firstImage, secondImage.height, secondImage.width)
+      }
+    }
+    return CompareableImages(firstImageCompare, secondImageCompare)
+  }
+
   // f(x) = m * x + n = y | p (x,y)
   fun createLinearFunction(p1x: Double, p1y: Double, p2x: Double, p2y:Double): LinearFunction {
 
@@ -219,23 +225,11 @@ class ImageComparator(val sensibility: Double = 0.1) {
    */
   private fun populateTheMatrixOfTheDifferences(firstImage: BufferedImage, secondImage: BufferedImage,
                                                 selector: ImageSelectorRectangle): Array<IntArray> {
-    val heightDiff = firstImage.height != secondImage.height
-    val widthDiff = firstImage.width != secondImage.width
-
-    var firstImageCompare = firstImage
-    var secondImageCompare = secondImage
-    if(heightDiff || widthDiff) {
-      // TODO: ...
-      if(firstImage.height > secondImage.height) {
-        secondImageCompare = resize(secondImage, firstImage.height, firstImage.width)
-      } else {
-        firstImageCompare = resize(firstImage, secondImage.height, secondImage.width)
-      }
-    }
+    val (firstImageCompare, secondImageCompare) = convertToComparable(firstImage, secondImage)
 
     val matrix = Array(firstImageCompare.width) { IntArray(firstImageCompare.height) }
-    val startHeight = (selector.p1y * firstImageCompare.height).toInt()
-    val endHeight = (selector.p2y * firstImageCompare.height).toInt()
+    val startHeight = firstImageCompare.height - (selector.p2y * firstImageCompare.height).toInt()
+    val endHeight = firstImageCompare.height - (selector.p1y * firstImageCompare.height).toInt()
     val startWidth = (selector.p1x * firstImageCompare.width).toInt()
     val endWidth = (selector.p2x * firstImageCompare.width).toInt()
 

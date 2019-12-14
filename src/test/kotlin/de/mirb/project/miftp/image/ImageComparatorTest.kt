@@ -96,12 +96,12 @@ class ImageComparatorTest {
   fun mathStuff() {
     val compare = ImageComparator()
     val function = compare.createLinearFunction(140.0, 30.0, 200.0, 70.0)
-    val x = 160
-    println("f($x) = " + function.calculateY(x).toInt())
-    val x1 = 140
-    println("f($x1) = " + function.calculateY(x1).toInt())
-    val x2 = 200
-    println("f($x2) = " + function.calculateY(x2).toInt())
+//    val x = 160
+//    println("f($x) = " + function.calculateY(x).toInt())
+//    val x1 = 140
+//    println("f($x1) = " + function.calculateY(x1).toInt())
+//    val x2 = 200
+//    println("f($x2) = " + function.calculateY(x2).toInt())
     Assert.assertEquals(43, function.calculateY(160).toInt())
     Assert.assertEquals(30, function.calculateY(140).toInt())
     Assert.assertEquals(69, function.calculateY(200).toInt())
@@ -111,12 +111,12 @@ class ImageComparatorTest {
   fun mathStuffBasic() {
     val compare = ImageComparator()
     val function = compare.createLinearFunction(20.0, 20.0, 60.0, 60.0)
-    val x = 160
-    println("f($x) = " + function.calculateY(x).toInt())
-    val x1 = 140
-    println("f($x1) = " + function.calculateY(x1).toInt())
-    val x2 = 200
-    println("f($x2) = " + function.calculateY(x2).toInt())
+//    val x = 160
+//    println("f($x) = " + function.calculateY(x).toInt())
+//    val x1 = 140
+//    println("f($x1) = " + function.calculateY(x1).toInt())
+//    val x2 = 200
+//    println("f($x2) = " + function.calculateY(x2).toInt())
     Assert.assertEquals(160, function.calculateY(160).toInt())
     Assert.assertEquals(140, function.calculateY(140).toInt())
     Assert.assertEquals(200, function.calculateY(200).toInt())
@@ -187,6 +187,19 @@ class ImageComparatorTest {
   }
 
   @Test
+  fun slightlyDifferentImagesAllSelected() {
+    val compare = ImageComparator()
+    val firstImage = loadImageResource("images/image_three.jpg")
+    val secondImage = loadImageResource("images/image_four.jpg")
+
+    val selector = ImageComparator.ImageSelector()
+    val result = compare.compare(firstImage, secondImage, selector)
+
+    Assert.assertEquals(0.9440104166666666, result, 0.0)
+    Assert.assertNotNull(result)
+  }
+
+  @Test
   fun slightlyDifferentImagesHalfSelected() {
     val compare = ImageComparator()
     val firstImage = loadImageResource("images/image_three.jpg")
@@ -209,6 +222,19 @@ class ImageComparatorTest {
     val result = compare.compare(firstImage, secondImage, selector)
 
     Assert.assertEquals(0.9587094907407407, result, 0.0)
+    Assert.assertNotNull(result)
+  }
+
+  @Test
+  fun slightlyDifferentImagesRectangleSelectedDiffEdge() {
+    val compare = ImageComparator()
+    val firstImage = loadImageResource("images/image_three.jpg")
+    val secondImage = loadImageResource("images/image_four.jpg")
+
+    val selector = ImageComparator.ImageSelectorRectangle(p1x = 0.8, p1y = 0.8)
+    val result = compare.compare(firstImage, secondImage, selector)
+
+    Assert.assertEquals(0.16764322916666666, result, 0.0)
     Assert.assertNotNull(result)
   }
 
