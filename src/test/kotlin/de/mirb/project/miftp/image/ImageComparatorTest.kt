@@ -174,7 +174,7 @@ class ImageComparatorTest {
   }
 
   @Test
-  fun slightlyDifferentImagesOnlyDiffSelected() {
+  fun slightlyDifferentImagesMostOfDiffSelected() {
     val compare = ImageComparator()
     val firstImage = loadImageResource("images/image_three.jpg")
     val secondImage = loadImageResource("images/image_four.jpg")
@@ -182,7 +182,20 @@ class ImageComparatorTest {
     val selector = ImageComparator.ImageSelector(p1x = 0.7, p2x = 1.0, p2y = 0.5, p3y = 0.5)
     val result = compare.compare(firstImage, secondImage, selector)
 
-    Assert.assertEquals(0.95484375, result, 0.0)
+    Assert.assertEquals(0.6989583333333333, result, 0.0)
+    Assert.assertNotNull(result)
+  }
+
+  @Test
+  fun slightlyDifferentImagesOnlyDiffSelected() {
+    val compare = ImageComparator()
+    val firstImage = loadImageResource("images/image_three.jpg")
+    val secondImage = loadImageResource("images/image_four.jpg")
+
+    val selector = ImageComparator.ImageSelector(p1x = 0.99, p1y = 0.8, p2x = 0.99, p2y = 0.8, p3y = 0.8, p4y = 0.85)
+    val result = compare.compare(firstImage, secondImage, selector)
+
+    Assert.assertEquals(0.0, result, 0.0)
     Assert.assertNotNull(result)
   }
 

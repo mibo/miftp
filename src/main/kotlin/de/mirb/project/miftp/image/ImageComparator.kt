@@ -74,7 +74,7 @@ class ImageComparator(val sensibility: Double = 0.1) {
     val imageTwo = ImageIO.read(secondImage)
 
     val matrix = populateTheMatrixOfTheDifferences(imageOne, imageTwo, selector)
-    return percentageOfZeros(matrix, selector)
+    return percentageOfZeros(matrix)
   }
 
   /**
@@ -94,15 +94,17 @@ class ImageComparator(val sensibility: Double = 0.1) {
     val imageTwo = ImageIO.read(secondImage)
 
     val matrix = populateTheMatrixOfTheDifferences(imageOne, imageTwo, selector)
-    return percentageOfZeros(matrix, selector)
+    return percentageOfZeros(matrix)
   }
 
-  private fun percentageOfZeros(matrix: Array<IntArray>, selector: ImageSelector): Double {
-    val all = matrix[0].size * matrix.size
-
-    val zeros = all - matrix.fold(0) { ones, outer ->
-      outer.fold(ones) { inOnes, value -> inOnes + value }
+  private fun percentageOfZeros(matrix: Array<IntArray>): Double {
+    val zeros = matrix.fold(0) { zeros, outer ->
+      outer.fold(zeros) { inZeros, value -> if (value == 0) inZeros + 1 else inZeros  }
     }
+    val ones = matrix.fold(0) { ones, outer ->
+      outer.fold(ones) { inOnes, value -> if (value > 0) inOnes + value else inOnes  }
+    }
+    val all = zeros + ones
     return if (zeros == 0) 0.0 else (zeros.div(all.toDouble()))
   }
 
@@ -133,7 +135,7 @@ class ImageComparator(val sensibility: Double = 0.1) {
                                                 selector: ImageSelector): Array<IntArray> {
     val (firstImageCompare, secondImageCompare) = convertToComparable(firstImage, secondImage)
 
-    val matrix = Array(firstImageCompare.width) { IntArray(firstImageCompare.height) }
+    val matrix = Array(firstImageCompare.width) { IntArray(firstImageCompare.height) { -1 } }
     val minWidth = (selector.p1x.coerceAtMost(selector.p2x) * firstImageCompare.width).toInt()
     val maxWidth = (selector.p3x.coerceAtLeast(selector.p4x) * firstImageCompare.width).toInt()
 
@@ -227,7 +229,7 @@ class ImageComparator(val sensibility: Double = 0.1) {
                                                 selector: ImageSelectorRectangle): Array<IntArray> {
     val (firstImageCompare, secondImageCompare) = convertToComparable(firstImage, secondImage)
 
-    val matrix = Array(firstImageCompare.width) { IntArray(firstImageCompare.height) }
+    val matrix = Array(firstImageCompare.width) { IntArray(firstImageCompare.height) { -1 } }
     val startHeight = firstImageCompare.height - (selector.p2y * firstImageCompare.height).toInt()
     val endHeight = firstImageCompare.height - (selector.p1y * firstImageCompare.height).toInt()
     val startWidth = (selector.p1x * firstImageCompare.width).toInt()
