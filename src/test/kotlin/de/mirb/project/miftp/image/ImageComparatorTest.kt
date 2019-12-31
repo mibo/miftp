@@ -93,6 +93,24 @@ class ImageComparatorTest {
   }
 
   @Test
+  @Ignore("only for local test")
+  fun localSelectionTest() {
+    val compare = ImageComparator()
+//    val firstImage = loadImageResource("images/_real_three.jpg")
+//    val secondImage = loadImageResource("images/_real_four.jpg")
+    val firstImage = loadImageResource("images/_real_three.jpg")
+    val secondImage = loadImageResource("images/_real_five.jpg")
+
+    val selector = ImageComparator.ImageSelector(p1x = 0.38)
+//    val selector = ImageComparator.ImageSelector()
+    val result = compare.compare(firstImage, secondImage, selector)
+
+    Assert.assertEquals(1.0, result, 0.0)
+    Assert.assertNotNull(result)
+  }
+
+
+  @Test
   fun mathStuff() {
     val compare = ImageComparator()
     val function = compare.createLinearFunction(140.0, 30.0, 200.0, 70.0)

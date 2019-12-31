@@ -10,7 +10,7 @@ import kotlin.math.sqrt
 /**
  * @param sensibility The default is the difference between two pixels need to be more than 10% (=> `0.1`).
  */
-class ImageComparator(val sensibility: Double = 0.1) {
+open class ImageComparator(val sensibility: Double = 0.1) {
 
   private data class CompareableImages(val first: BufferedImage, val second: BufferedImage)
 
@@ -61,14 +61,28 @@ class ImageComparator(val sensibility: Double = 0.1) {
 
   /**
    * Compare how equal both images are. The result is a value between 0 and 1.0
-   * which results in the percentage (0-100%) of equality.
+   * which results in the percentage (0-100%) of equality with full selected images.
    *
    * @param firstImage
    * @param secondImage
    * @return comparision how equal both images are as percentage (0.0=0% to 1.0=100%)
    */
+  open fun compare(firstImage: InputStream, secondImage: InputStream): Double {
+    return compare(firstImage, secondImage, ImageSelectorRectangle())
+  }
+
+  /**
+   * Compare how equal both images are. The result is a value between 0 and 1.0
+   * which results in the percentage (0-100%) of equality.
+   * The to compared parts of the images are select via the given selector.
+   *
+   * @param firstImage
+   * @param secondImage
+   * @param selector
+   * @return comparision how equal both images are as percentage (0.0=0% to 1.0=100%)
+   */
   fun compare(firstImage: InputStream, secondImage: InputStream,
-              selector: ImageSelectorRectangle = ImageSelectorRectangle()): Double {
+              selector: ImageSelectorRectangle): Double {
 
     val imageOne = ImageIO.read(firstImage)
     val imageTwo = ImageIO.read(secondImage)
@@ -80,9 +94,11 @@ class ImageComparator(val sensibility: Double = 0.1) {
   /**
    * Compare how equal both images are. The result is a value between 0 and 1.0
    * which results in the percentage (0-100%) of equality.
+   * The to compared parts of the images are select via the given selector.
    *
    * @param firstImage
    * @param secondImage
+   * @param selector
    * @return comparision how equal both images are as percentage (0.0=0% to 1.0=100%)
    */
   fun compare(firstImage: InputStream, secondImage: InputStream,
