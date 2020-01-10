@@ -9,6 +9,14 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
   * Add feature to _FTP_ server to allow to keep _flagged_ files longer (to enable  `SlackImageDiffNotifier` to flag images) 
   * Add feature to _Service_ to specify areas which are ignored for image diff
 
+## [0.9.0] - 2020-01-10
+### Added
+  * Added option to select image diff area (used in `SlackImageDiffNotifier`)
+
+### Changed
+  * Updated Kotlin to `1.3.60`
+  * Updated Spring Boot to `2.2.2.RELEASE`
+
 ## [0.8.3] - 2019-10-28
 ### Changed
   * Updated Kotlin to `1.3.50`

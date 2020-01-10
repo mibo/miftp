@@ -3,6 +3,7 @@ package de.mirb.project.miftp.control.notifier
 import de.mirb.project.miftp.control.FtpFileStore
 import de.mirb.project.miftp.fs.InMemoryFtpFile
 import de.mirb.project.miftp.fs.listener.FileSystemEvent
+import de.mirb.project.miftp.image.FourPointSelectionImageComparator
 import de.mirb.project.miftp.image.ImageComparator
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
@@ -19,28 +20,71 @@ class SlackImageDiffNotifier : FtpEventListener {
 
   val PARA_WEBHOOK_URL = "slack_webhook_url"
   val PARA_MIFTP_SERVER_BASE_URL = "miftp_server_base_url"
-  /** all images which are less _equal_ (more _different_) then the threshold are posted */
+  /** all images which are less _equal_ (more _different_) then the threshold gets posted */
   val PARA_DIFF_THRESHOLD = "diff_threshold"
   val PARA_DIFF_THRESHOLD_DEFAULT = "0.5"
-  /** all images which are less _equal_ (more _different_) then the ignore threshold are ignored */
+  /** all images which are less _equal_ (more _different_) then the ignored threshold gets ignored */
   val PARA_DIFF_IGNORE_THRESHOLD = "diff_ignore_threshold"
   val PARA_DIFF_IGNORE_THRESHOLD_DEFAULT = "0.0"
+  // value must be a string in specified format
+  // each point is defined as two double values in brackets separated with one colon
+  // if a default double should be used the value can be omitted but each point must be defined
+  // e.g. (`p1[:];p2[1.0:];p3[:0.7];p4[0.0:1.0]`)
+  val PARA_IMAGE_SELECTOR_POINTS = "image_selector_points"
 
-  lateinit var url: String
-  lateinit var serverBaseUrl: String
-  var diffThreshold = PARA_DIFF_THRESHOLD_DEFAULT.toDouble()
-  var diffIgnore = PARA_DIFF_IGNORE_THRESHOLD_DEFAULT.toDouble()
-  var ftpFileStore: FtpFileStore? = null
-  var lastImage: FtpFile? = null
+  private lateinit var url: String
+  private lateinit var serverBaseUrl: String
+  private var diffThreshold = PARA_DIFF_THRESHOLD_DEFAULT.toDouble()
+  private var diffIgnore = PARA_DIFF_IGNORE_THRESHOLD_DEFAULT.toDouble()
+  private var ftpFileStore: FtpFileStore? = null
+  private var lastImage: FtpFile? = null
+  private lateinit var imageComparator: ImageComparator
+
 
   override fun init(parameters: Map<String, String>, ftpFileStore: FtpFileStore): FtpEventListener {
     url = getOrThrow(parameters, PARA_WEBHOOK_URL)
     serverBaseUrl = createServerBaseUrl(parameters)
     diffThreshold = readDiffThreshold(parameters)
     diffIgnore = readDiffIgnoreThreshold(parameters)
+    imageComparator = createImageComparator(parameters)
 
     this.ftpFileStore = ftpFileStore
     return this
+  }
+
+  private fun createImageComparator(parameters: Map<String, String>): ImageComparator {
+    val imageSelectorParam = parameters[PARA_IMAGE_SELECTOR_POINTS]
+
+    if (imageSelectorParam == null) {
+      return ImageComparator()
+    }
+
+    val selector = createImageSelector(imageSelectorParam)
+    return FourPointSelectionImageComparator(selector)
+  }
+
+  fun createImageSelector(imageSelectorParam: String): ImageComparator.ImageSelector {
+    // init with default values
+    val selectionPoints = doubleArrayOf(0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0)
+    val points = imageSelectorParam.split(";")
+    var index = 0
+    //
+    points.forEach {
+      val twoDoubles = it.substring(2)
+              .removeSurrounding("[", "]")
+              .split(":")
+      if (twoDoubles[0].isNotEmpty() && twoDoubles[0].toDoubleOrNull() != null) {
+        selectionPoints[index] = twoDoubles[0].toDouble()
+      }
+      index++
+      if (twoDoubles[1].isNotEmpty() && twoDoubles[1].toDoubleOrNull() != null) {
+        selectionPoints[index] = twoDoubles[1].toDouble()
+      }
+      index++
+    }
+
+    return ImageComparator.ImageSelector(selectionPoints[0], selectionPoints[1], selectionPoints[2], selectionPoints[3],
+            selectionPoints[4], selectionPoints[5], selectionPoints[6], selectionPoints[7])
   }
 
   private fun readDiffThreshold(parameters: Map<String, String>): Double {
@@ -90,8 +134,6 @@ class SlackImageDiffNotifier : FtpEventListener {
             || file.name.endsWith("jpg", true)
             || file.name.endsWith("jpeg", true)
   }
-
-  private val imageComparator = ImageComparator()
 
   private fun compareFiles(first: FtpFile, second: FtpFile): DiffResult {
     val diff = imageComparator.compare(first.createInputStream(0), second.createInputStream(0))
