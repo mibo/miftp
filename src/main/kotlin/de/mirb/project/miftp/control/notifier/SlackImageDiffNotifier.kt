@@ -22,10 +22,10 @@ class SlackImageDiffNotifier : FtpEventListener {
   val PARA_MIFTP_SERVER_BASE_URL = "miftp_server_base_url"
   /** all images which are less _equal_ (more _different_) then the threshold gets posted */
   val PARA_DIFF_THRESHOLD = "diff_threshold"
-  val PARA_DIFF_THRESHOLD_DEFAULT = "0.5"
+  val PARA_DIFF_THRESHOLD_DEFAULT = "50"
   /** all images which are less _equal_ (more _different_) then the ignored threshold gets ignored */
   val PARA_DIFF_IGNORE_THRESHOLD = "diff_ignore_threshold"
-  val PARA_DIFF_IGNORE_THRESHOLD_DEFAULT = "0.0"
+  val PARA_DIFF_IGNORE_THRESHOLD_DEFAULT = "0"
   // value must be a string in specified format
   // each point is defined as two double values in brackets separated with one colon
   // if a default double should be used the value can be omitted but each point must be defined
@@ -34,8 +34,8 @@ class SlackImageDiffNotifier : FtpEventListener {
 
   private lateinit var url: String
   private lateinit var serverBaseUrl: String
-  private var diffThreshold = PARA_DIFF_THRESHOLD_DEFAULT.toDouble()
-  private var diffIgnore = PARA_DIFF_IGNORE_THRESHOLD_DEFAULT.toDouble()
+  private var diffThresholdPercentage = PARA_DIFF_THRESHOLD_DEFAULT.toDouble()
+  private var diffIgnorePercentage = PARA_DIFF_IGNORE_THRESHOLD_DEFAULT.toDouble()
   private var ftpFileStore: FtpFileStore? = null
   private var lastImage: FtpFile? = null
   private lateinit var imageComparator: ImageComparator
@@ -44,8 +44,8 @@ class SlackImageDiffNotifier : FtpEventListener {
   override fun init(parameters: Map<String, String>, ftpFileStore: FtpFileStore): FtpEventListener {
     url = getOrThrow(parameters, PARA_WEBHOOK_URL)
     serverBaseUrl = createServerBaseUrl(parameters)
-    diffThreshold = readDiffThreshold(parameters)
-    diffIgnore = readDiffIgnoreThreshold(parameters)
+    diffThresholdPercentage = readDiffThreshold(parameters)
+    diffIgnorePercentage = readDiffIgnoreThreshold(parameters)
     imageComparator = createImageComparator(parameters)
 
     this.ftpFileStore = ftpFileStore
@@ -136,9 +136,12 @@ class SlackImageDiffNotifier : FtpEventListener {
   }
 
   private fun compareFiles(first: FtpFile, second: FtpFile): DiffResult {
-    val diff = imageComparator.compare(first.createInputStream(0), second.createInputStream(0))
-    LOG.info("File compare (first=${first.name} to second=${second.name}): $diff (${diff < diffThreshold})")
-    return DiffResult(first, second, diff, diffIgnore, diffThreshold)
+    val equality = imageComparator.compare(first.createInputStream(0), second.createInputStream(0))
+    val differencePercentage = (1 - equality) * 100
+    val thresholdReached = differencePercentage >= diffThresholdPercentage
+    val belowIgnore = differencePercentage < diffIgnorePercentage
+    LOG.info("File compare (first=${first.name} to second=${second.name}): $differencePercentage (t=$thresholdReached/i=$belowIgnore)")
+    return DiffResult(first, second, equality, differencePercentage, diffIgnorePercentage, diffThresholdPercentage)
   }
 
   private fun slackPost(message: String) {
@@ -154,7 +157,8 @@ class SlackImageDiffNotifier : FtpEventListener {
   }
 
   private fun createJsonPostContent(baseUrl: String, event: FileSystemEvent, diff: DiffResult, token: String) : String {
-    val message = "(first=${diff.first.name} to second=${diff.second.name}): ${diff.diffValue} (${diff.isDifferent()})"
+    val differencePercentage = String.format("%.2f%", (1 - diff.diffPercentage) * 100)
+    val message = "(first=${diff.first.name} to second=${diff.second.name}): $differencePercentage (${diff.isDifferent()})"
 
     return """
     {
@@ -176,7 +180,7 @@ class SlackImageDiffNotifier : FtpEventListener {
         {
             "title": "Previous image: ${diff.second.name}",
             "title_link": "$baseUrl/files/${diff.second.absolutePath}?content",
-            "text": "Difference between images: ${diff.diffValue} (${diff.isDifferent()})",
+            "text": "Difference between images: $differencePercentage (${diff.isDifferent()})",
             "color": "#003CA6",
             "footer": "MiFtp",
             "ts": ${event.timestamp.atZone(ZoneId.systemDefault()).toEpochSecond()}
@@ -187,11 +191,11 @@ class SlackImageDiffNotifier : FtpEventListener {
   }
 
 
-  data class DiffResult(val first: FtpFile, val second: FtpFile,
-                        val diffValue: Double, val diffIgnore: Double, val diffThreshold: Double) {
+  data class DiffResult(val first: FtpFile, val second: FtpFile, val equality: Double,
+                        val diffPercentage: Double, val diffIgnorePercentage: Double, val diffThresholdPercentage: Double) {
 
-    fun isDifferent() = diffValue < diffThreshold
-    fun ignore() = diffValue < diffIgnore
+    fun isDifferent() = diffPercentage < diffThresholdPercentage
+    fun ignore() = diffPercentage < diffIgnorePercentage
 
     fun ifDifferentAndNotIgnored(run: (r: DiffResult) -> Unit) {
       if(isDifferent() && !ignore()) {

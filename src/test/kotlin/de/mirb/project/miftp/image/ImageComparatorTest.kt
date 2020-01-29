@@ -98,11 +98,16 @@ class ImageComparatorTest {
     val compare = ImageComparator()
 //    val firstImage = loadImageResource("images/_real_three.jpg")
 //    val secondImage = loadImageResource("images/_real_four.jpg")
-    val firstImage = loadImageResource("images/_real_three.jpg")
-    val secondImage = loadImageResource("images/_real_five.jpg")
+//    val firstImage = loadImageResource("images/_real_three.jpg")
+//    val secondImage = loadImageResource("images/_real_five.jpg")
+    val firstImage = loadImageResource("images/_real-image_8.jpg")
+    val secondImage = loadImageResource("images/_real-image_9.jpg")
 
-    val selector = ImageComparator.ImageSelector(p1x = 0.38)
+//    val selector = ImageComparator.ImageSelector(p1x = 0.38)
 //    val selector = ImageComparator.ImageSelector()
+    // p1[0.37:0.9];p2[0.35:];p3[0.56:];p4[0.56:0.9]
+    val selector = ImageComparator.ImageSelector(p1x = 0.47, p1y = 0.9, p2x = 0.35, p3x = 0.56, p4x = 0.56, p4y = 0.9)
+
     val result = compare.compare(firstImage, secondImage, selector)
 
     Assert.assertEquals(1.0, result, 0.0)
