@@ -8,7 +8,7 @@ SNAPSHOT=false
 if [[ -z $1 ]]; then
   echo "No version parameter given. Stop build."
   exit 1
-elif [[ ${1} =~ ^([0-9]\.){2}[0-9](-SNAPSHOT)?$ ]]; then
+elif [[ ${1} =~ ^([0-9]+\.){2}[0-9](-SNAPSHOT)?$ ]]; then
   VERSION=$1
   if [[ ${VERSION} =~ .*-SNAPSHOT ]]; then
     SNAPSHOT=true
