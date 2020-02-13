@@ -140,7 +140,7 @@ class SlackImageDiffNotifier : FtpEventListener {
     val differencePercentage = (1 - equality) * 100
     val thresholdReached = differencePercentage >= diffThresholdPercentage
     val belowIgnore = differencePercentage < diffIgnorePercentage
-    LOG.info("File compare (first=${first.name} to second=${second.name}): $differencePercentage (t=$thresholdReached/i=$belowIgnore)")
+    LOG.info("File compare (first=${first.name} to second=${second.name}): $differencePercentage (th=$thresholdReached/ign=$belowIgnore)")
     return DiffResult(first, second, equality, differencePercentage, diffIgnorePercentage, diffThresholdPercentage)
   }
 
@@ -157,7 +157,7 @@ class SlackImageDiffNotifier : FtpEventListener {
   }
 
   private fun createJsonPostContent(baseUrl: String, event: FileSystemEvent, diff: DiffResult, token: String) : String {
-    val differencePercentage = String.format("%.2f%", (1 - diff.diffPercentage) * 100)
+    val differencePercentage = String.format("%.2f", diff.diffPercentage)
     val message = "(first=${diff.first.name} to second=${diff.second.name}): $differencePercentage (${diff.isDifferent()})"
 
     return """
@@ -180,7 +180,7 @@ class SlackImageDiffNotifier : FtpEventListener {
         {
             "title": "Previous image: ${diff.second.name}",
             "title_link": "$baseUrl/files/${diff.second.absolutePath}?content",
-            "text": "Difference between images: $differencePercentage (${diff.isDifferent()})",
+            "text": "Difference between images: $differencePercentage% (${diff.isDifferent()})",
             "color": "#003CA6",
             "footer": "MiFtp",
             "ts": ${event.timestamp.atZone(ZoneId.systemDefault()).toEpochSecond()}
@@ -194,7 +194,7 @@ class SlackImageDiffNotifier : FtpEventListener {
   data class DiffResult(val first: FtpFile, val second: FtpFile, val equality: Double,
                         val diffPercentage: Double, val diffIgnorePercentage: Double, val diffThresholdPercentage: Double) {
 
-    fun isDifferent() = diffPercentage < diffThresholdPercentage
+    fun isDifferent() = diffPercentage >= diffThresholdPercentage
     fun ignore() = diffPercentage < diffIgnorePercentage
 
     fun ifDifferentAndNotIgnored(run: (r: DiffResult) -> Unit) {
