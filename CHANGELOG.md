@@ -9,6 +9,15 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
   * Add feature to _FTP_ server to allow to keep _flagged_ files longer (to enable  `SlackImageDiffNotifier` to flag images) 
   * Add feature to _Service_ to specify areas which are ignored for image diff
 
+## [1.0.0] - 2020-02-18
+### Added
+  * From this version (`1.0.0`)  the project now follows the Semantic Versioning
+    (and as result for every not backward compatible change the major version will be increased)
+
+### Changed
+  * Changed configuration for SlackImageDiffNotifier.
+    As it is a not backward compatible change and the features are fine (for now) the decision was to release it as `1.0.0`
+
 ## [0.9.1] - 2020-01-22
 ### Changed
   * Updated Spring Boot to `2.2.4.RELEASE`
