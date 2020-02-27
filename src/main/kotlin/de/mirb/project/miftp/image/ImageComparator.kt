@@ -8,11 +8,11 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 /**
- * @param sensibility The default is the difference between two pixels need to be more than 10% (=> `0.1`).
+ * @param sensitivity The default is the difference between two pixels need to be more than 10% (=> `0.1`).
  */
-open class ImageComparator(val sensibility: Double = 0.1) {
+open class ImageComparator(private val sensitivity: Double = 0.1) {
 
-  private data class CompareableImages(val first: BufferedImage, val second: BufferedImage)
+  private data class ComparableImages(val first: BufferedImage, val second: BufferedImage)
 
   /**
    * ```
@@ -197,7 +197,7 @@ open class ImageComparator(val sensibility: Double = 0.1) {
     return matrix
   }
 
-  private fun convertToComparable(firstImage: BufferedImage, secondImage: BufferedImage): CompareableImages {
+  private fun convertToComparable(firstImage: BufferedImage, secondImage: BufferedImage): ComparableImages {
     val heightDiff = firstImage.height != secondImage.height
     val widthDiff = firstImage.width != secondImage.width
 
@@ -211,7 +211,7 @@ open class ImageComparator(val sensibility: Double = 0.1) {
         firstImageCompare = resize(firstImage, secondImage.height, secondImage.width)
       }
     }
-    return CompareableImages(firstImageCompare, secondImageCompare)
+    return ComparableImages(firstImageCompare, secondImageCompare)
   }
 
   // f(x) = m * x + n = y | p (x,y)
@@ -287,6 +287,6 @@ open class ImageComparator(val sensibility: Double = 0.1) {
             (green2 - green1).toDouble().pow(2.0) +
             (blue2 - blue1).toDouble().pow(2.0)) / sqrt(255.0.pow(2.0) * 3)
 //    println("Diff rgb1 ($rgb1) with rgb2 ($rgb2): $result")
-    return result > sensibility
+    return result > sensitivity
   }
 }

@@ -21,6 +21,8 @@ class SlackImageDiffNotifier : FtpEventListener {
   val PARA_WEBHOOK_URL = "slack_webhook_url"
   val PARA_MIFTP_SERVER_BASE_URL = "miftp_server_base_url"
   /** all images which are less _equal_ (more _different_) then the threshold gets posted */
+  val PARA_DIFF_SENSITIVITY= "diff_sensitivity"
+  val PARA_DIFF_SENSITIVITY_DEFAULT = "0.05"
   val PARA_DIFF_THRESHOLD = "diff_threshold"
   val PARA_DIFF_THRESHOLD_DEFAULT = "50"
   /** all images which are less _equal_ (more _different_) then the ignored threshold gets ignored */
@@ -54,13 +56,14 @@ class SlackImageDiffNotifier : FtpEventListener {
 
   private fun createImageComparator(parameters: Map<String, String>): ImageComparator {
     val imageSelectorParam = parameters[PARA_IMAGE_SELECTOR_POINTS]
+    val sensitivity = readDiffSensitivity(parameters)
 
     if (imageSelectorParam == null) {
-      return ImageComparator()
+      return ImageComparator(sensitivity)
     }
 
     val selector = createImageSelector(imageSelectorParam)
-    return FourPointSelectionImageComparator(selector)
+    return FourPointSelectionImageComparator(selector, sensitivity)
   }
 
   fun createImageSelector(imageSelectorParam: String): ImageComparator.ImageSelector {
@@ -85,6 +88,11 @@ class SlackImageDiffNotifier : FtpEventListener {
 
     return ImageComparator.ImageSelector(selectionPoints[0], selectionPoints[1], selectionPoints[2], selectionPoints[3],
             selectionPoints[4], selectionPoints[5], selectionPoints[6], selectionPoints[7])
+  }
+
+  private fun readDiffSensitivity(parameters: Map<String, String>): Double {
+    val diff = parameters.getOrDefault(PARA_DIFF_SENSITIVITY, PARA_DIFF_SENSITIVITY_DEFAULT).toDoubleOrNull()
+    return diff ?: PARA_DIFF_SENSITIVITY_DEFAULT.toDouble()
   }
 
   private fun readDiffThreshold(parameters: Map<String, String>): Double {
