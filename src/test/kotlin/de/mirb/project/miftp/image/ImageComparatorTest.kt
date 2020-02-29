@@ -21,11 +21,11 @@ class ImageComparatorTest {
   @Test
   @Ignore("Only for local tests...")
   fun realImagesRow() {
-    val compare = ImageComparator() // default
+//    val compare = ImageComparator() // default
 //    val compare = ImageComparator(sensitivity = 0.05) // more sensitive
-//    val selector = ImageComparator.ImageSelector(p1x = 0.37, p1y = 0.9,
-//            p2x = 0.35, p3x = 0.56, p4x = 0.56, p4y = 0.9) // p1[0.37:0.9];p2[0.35:];p3[0.56:];p4[0.56:0.9]
-//    val compare = FourPointSelectionImageComparator(selector, sensibility = 0.04) // more sensible
+    val selector = ImageComparator.ImageSelector(p1x = 0.37, p1y = 0.9,
+            p2x = 0.35, p3x = 0.56, p4x = 0.56, p4y = 0.9) // p1[0.37:0.9];p2[0.35:];p3[0.56:];p4[0.56:0.9]
+    val compare = FourPointSelectionImageComparator(selector, sensitivity = 0.05) // more sensitive
 
 //    val namePattern = "images/_AAA_%d.jpg"
     val namePattern = "images/_test_image_%d.jpg"

@@ -9,6 +9,11 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
   * Add feature to _FTP_ server to allow to keep _flagged_ files longer (to enable  `SlackImageDiffNotifier` to flag images) 
   * Add feature to _Service_ to specify areas which are ignored for image diff
 
+## [1.0.2] - 2020-02-29
+### Fixed
+  * Fixed wrong handling of `diff_ignore_threshold` in `SlackImageDiffNotifier`
+  * Fixed message content for diff notifications (in `SlackImageDiffNotifier`)
+
 ## [1.0.1] - 2020-02-27
 ### Added
   * Added parameter `diff_sensitivity` which is used to set sensitivity for the image comparision 

@@ -20,14 +20,18 @@ class SlackImageDiffNotifier : FtpEventListener {
 
   val PARA_WEBHOOK_URL = "slack_webhook_url"
   val PARA_MIFTP_SERVER_BASE_URL = "miftp_server_base_url"
-  /** all images which are less _equal_ (more _different_) then the threshold gets posted */
+
+  /** how sensitive the image comparator is. Lower value is _more_ sensitive */
   val PARA_DIFF_SENSITIVITY= "diff_sensitivity"
   val PARA_DIFF_SENSITIVITY_DEFAULT = "0.05"
+  /** all images which are more _different_ (less _equal_) then the threshold (as percentage) gets posted */
   val PARA_DIFF_THRESHOLD = "diff_threshold"
+  /** value as percentage (all between 0 and 100 make sense) */
   val PARA_DIFF_THRESHOLD_DEFAULT = "50"
-  /** all images which are less _equal_ (more _different_) then the ignored threshold gets ignored */
+  /** all images which are more _different_ (less _equal_) then the ignored threshold (as percentage) gets ignored */
   val PARA_DIFF_IGNORE_THRESHOLD = "diff_ignore_threshold"
-  val PARA_DIFF_IGNORE_THRESHOLD_DEFAULT = "0"
+  /** value as percentage (all between 0 and 100 make sense) */
+  val PARA_DIFF_IGNORE_THRESHOLD_DEFAULT = "100"
   // value must be a string in specified format
   // each point is defined as two double values in brackets separated with one colon
   // if a default double should be used the value can be omitted but each point must be defined
@@ -176,18 +180,18 @@ class SlackImageDiffNotifier : FtpEventListener {
             "author_link": "$baseUrl",
             "pretext": "Different image created...",
             "fallback": "There is a difference between images ($message).",
-            "title": "New image: ${diff.first.name}",
-            "title_link": "$baseUrl/files/${diff.first.absolutePath}?content",
+            "title": "New image: ${diff.second.name}",
+            "title_link": "$baseUrl/files/${diff.second.absolutePath}?content",
             "color": "#36a64f"
         },
         {
-            "title": "Token link for: ${diff.first.name}",
+            "title": "Token link for: ${diff.second.name}",
             "title_link": "$baseUrl/go/token/${token}?content",
             "image_url": "$baseUrl/go/token/${token}?content"
         },
         {
-            "title": "Previous image: ${diff.second.name}",
-            "title_link": "$baseUrl/files/${diff.second.absolutePath}?content",
+            "title": "Previous image: ${diff.first.name}",
+            "title_link": "$baseUrl/files/${diff.first.absolutePath}?content",
             "text": "Difference between images: $differencePercentage% (${diff.isDifferent()})",
             "color": "#003CA6",
             "footer": "MiFtp",
@@ -203,7 +207,7 @@ class SlackImageDiffNotifier : FtpEventListener {
                         val diffPercentage: Double, val diffIgnorePercentage: Double, val diffThresholdPercentage: Double) {
 
     fun isDifferent() = diffPercentage >= diffThresholdPercentage
-    fun ignore() = diffPercentage < diffIgnorePercentage
+    fun ignore() = diffPercentage > diffIgnorePercentage
 
     fun ifDifferentAndNotIgnored(run: (r: DiffResult) -> Unit) {
       if(isDifferent() && !ignore()) {
