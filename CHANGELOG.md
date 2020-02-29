@@ -12,6 +12,7 @@ Planned changes/updates/fixes/features for to be part of one of the next _releas
 ## [1.0.2] - 2020-02-29
 ### Fixed
   * Fixed wrong handling of `diff_ignore_threshold` in `SlackImageDiffNotifier`
+  * Fixed message content for diff notifications (in `SlackImageDiffNotifier`)
 
 ## [1.0.1] - 2020-02-27
 ### Added

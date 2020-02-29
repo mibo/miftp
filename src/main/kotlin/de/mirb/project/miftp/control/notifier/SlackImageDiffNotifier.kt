@@ -180,18 +180,18 @@ class SlackImageDiffNotifier : FtpEventListener {
             "author_link": "$baseUrl",
             "pretext": "Different image created...",
             "fallback": "There is a difference between images ($message).",
-            "title": "New image: ${diff.first.name}",
-            "title_link": "$baseUrl/files/${diff.first.absolutePath}?content",
+            "title": "New image: ${diff.second.name}",
+            "title_link": "$baseUrl/files/${diff.second.absolutePath}?content",
             "color": "#36a64f"
         },
         {
-            "title": "Token link for: ${diff.first.name}",
+            "title": "Token link for: ${diff.second.name}",
             "title_link": "$baseUrl/go/token/${token}?content",
             "image_url": "$baseUrl/go/token/${token}?content"
         },
         {
-            "title": "Previous image: ${diff.second.name}",
-            "title_link": "$baseUrl/files/${diff.second.absolutePath}?content",
+            "title": "Previous image: ${diff.first.name}",
+            "title_link": "$baseUrl/files/${diff.first.absolutePath}?content",
             "text": "Difference between images: $differencePercentage% (${diff.isDifferent()})",
             "color": "#003CA6",
             "footer": "MiFtp",
