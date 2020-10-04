@@ -1,7 +1,7 @@
 buildscript {
 	ext {
-		kotlinVersion = '1.3.70'
-		springBootVersion = '2.3.0.RELEASE'
+		kotlinVersion = '1.3.72'
+		springBootVersion = '2.3.4.RELEASE'
         ftpServerVersion = '1.1.1'
         ftpClientVersion = '3.6'
         junitVersion = '4.12'
@@ -28,7 +28,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 group = 'de.mirb.project'
-version = '1.0.3'
+version = '1.0.4'
 sourceCompatibility = 1.8
 compileKotlin {
 	kotlinOptions {
